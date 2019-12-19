@@ -3,8 +3,6 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Models\Order;
-use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
 class V2boardUpdate extends Command
@@ -40,6 +38,20 @@ class V2boardUpdate extends Command
      */
     public function handle()
     {
-        
+    	$file = \File::get(base_path() . '/update.sql');
+    	if (!$file) {
+    		abort(500, '数据库更新文件不存在');
+    	}
+		$sql = str_replace("\n", "", $file);
+		$sql = preg_split("/;/", $sql);
+		if (!is_array($sql)) {
+			abort(500, '数据库更新文件格式有误');
+		}
+		foreach($sql as $item) {
+			echo 'RUN' . $item . "\r\n";
+			try {
+				DB::select(DB::raw($item));
+			} catch (\Exception $e) {}
+		}
     }
 }
