@@ -14,17 +14,15 @@ class TutorialSort extends FormRequest
     public function rules()
     {
         return [
-            'id' => 'required',
-            'sort' => 'required|integer'
+            'tutorial_ids' => 'required|array'
         ];
     }
 
     public function messages()
     {
         return [
-            'id.required' => '教程ID不能为空',
-            'sort.required' => '排序不能为空',
-            'sort.integer' => '排序格式有误'
+            'tutorial_ids.required' => '教程ID不能为空',
+            'tutorial_ids.array' => '教程ID格式有误'
         ];
     }
 }
