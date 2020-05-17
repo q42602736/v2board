@@ -20,10 +20,16 @@ class Telegram {
         ]);
     }
 
+    public function getMe()
+    {
+        dd($this->request('getMe'));
+    }
+
     private function request(string $method, array $params)
     {
         $curl = new Curl();
-        $curl->post($this->api . $method, http_build_query($params));
+        $curl->get($this->api . $method, http_build_query($params));
         $curl->close();
+        return $curl->response;
     }
 }
