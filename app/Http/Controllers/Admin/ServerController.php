@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Requests\Admin\ServerSave;
-use App\Http\Requests\Admin\ServerSort;
-use App\Http\Requests\Admin\ServerUpdate;
+use App\Http\Requests\Admin\ServerV2raySave;
+use App\Http\Requests\Admin\ServerV2raySort;
+use App\Http\Requests\Admin\ServerV2rayUpdate;
 use App\Services\ServerService;
 use App\Utils\CacheKey;
 use Illuminate\Http\Request;
@@ -38,9 +38,9 @@ class ServerController extends Controller
         ]);
     }
 
-    public function save(ServerSave $request)
+    public function save(ServerV2raySave $request)
     {
-        $params = $request->only(array_keys(ServerSave::RULES));
+        $params = $request->only(array_keys(ServerV2raySave::RULES));
         $params['group_id'] = json_encode($params['group_id']);
         if (isset($params['tags'])) {
             $params['tags'] = json_encode($params['tags']);
@@ -165,7 +165,7 @@ class ServerController extends Controller
         ]);
     }
 
-    public function update(ServerUpdate $request)
+    public function update(ServerV2rayUpdate $request)
     {
         $params = $request->only([
             'show',
@@ -211,7 +211,7 @@ class ServerController extends Controller
         ]);
     }
 
-    public function sort(ServerSort $request)
+    public function sort(ServerV2raySort $request)
     {
         DB::beginTransaction();
         foreach ($request->input('server_ids') as $k => $v) {
