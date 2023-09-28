@@ -102231,13 +102231,20 @@
                   , n = e.allow_insecure
                   , pv = e.private_key
                   , pb = e.public_key
-                  , sd = e.shortId;
+                  , sd = e.short_id
+                  , pt = e.server_port;
                 return y.a.createElement(y.a.Fragment, null, y.a.createElement("div", null, y.a.createElement("div", {
                     className: "form-group"
                 }, y.a.createElement("label", null, "Server Name"), y.a.createElement(s["a"], {
                     value: t,
                     onChange: e=>this.change("server_name", e.target.value),
                     placeholder: "REALITY\u5fc5\u586b\uff0c\u4e0e\u540e\u7aef\u4fdd\u6301\u4e00\u81f4"
+                })), y.a.createElement("div", {
+                    className: "form-group"
+                }, y.a.createElement("label", null, "Server Port"), y.a.createElement(s["a"], {
+                    value: pt,
+                    onChange: e=>this.change("server_port", e.target.value),
+                    placeholder: "REALITY\u76ee\u6807\u7aef\u53e3,\u9ed8\u8ba4443"
                 })), y.a.createElement("div", {
                     className: "form-group"
                 }, y.a.createElement("label", null, "Private Key"), y.a.createElement(s["a"], {
@@ -102254,7 +102261,7 @@
                     className: "form-group"
                 }, y.a.createElement("label", null, "ShortId"), y.a.createElement(s["a"], {
                     value: sd,
-                    onChange: e=>this.change("shortId", e.target.value),
+                    onChange: e=>this.change("short_id", e.target.value),
                     placeholder: "\u7559\u7a7a\u81ea\u52a8\u751f\u6210"
                 })), y.a.createElement("div", {
                     className: "form-group"
