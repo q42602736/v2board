@@ -102059,7 +102059,7 @@
                 ))), y.a.createElement("div", {
                     className: "row"
                 }, y.a.createElement("div", {
-                    className: "form-group col-md-12 col-xs-12"
+                    className: "form-group col-md-3 col-xs-12"
                 }, y.a.createElement("label", null, "HYSTERIA\u7248\u672c"), y.a.createElement(N["a"], {
                     value: parseInt(e.version),
                     style: {
@@ -102125,20 +102125,64 @@
                     value: e.server_name,
                     onChange: e=>this.formChange("server_name", e.target.value)
                 })), y.a.createElement("div", {
-                    className: "form-group"
+                    className: "row"
+                }, (parseInt(e.version) == 1) && y.a.createElement("div", {
+                    className: "form-group col-md-6 col-xs-12"
+                }, y.a.createElement("label", null, "\u6df7\u6dc6\u65b9\u5f0fobfs"), y.a.createElement(N["a"], {
+                    value: e.obfs,
+                    style: {
+                        width: "100%"
+                    },
+                    onChange: e=>this.formChange("obfs", e)
+                }, y.a.createElement(N["a"].Option, {
+                    key: 0,
+                    value: null
+                }, "\u65e0"), y.a.createElement(N["a"].Option, {
+                    key: 1,
+                    value: "xplus"
+                }, "xplus"))), (parseInt(e.version) == 1 && e.obfs === "xplus") && y.a.createElement("div", {
+                    className: "form-group col-md-6 col-xs-12"
+                }, y.a.createElement("label", null, "\u6df7\u6dc6\u5bc6\u7801obfsParam"), y.a.createElement(s["a"], {
+                    value: e.obfs_password,
+                    placeholder: "\u7559\u7a7a\u81ea\u52a8\u751f\u6210",
+                    onChange: e=>this.formChange("obfs_password", e.target.value)
+                })), (parseInt(e.version) == 2) && y.a.createElement("div", {
+                    className: "form-group col-md-6 col-xs-12"
+                }, y.a.createElement("label", null, "\u6df7\u6dc6\u65b9\u5f0fobfs"), y.a.createElement(N["a"], {
+                    value: e.obfs,
+                    style: {
+                        width: "100%"
+                    },
+                    onChange: e=>this.formChange("obfs", e)
+                }, y.a.createElement(N["a"].Option, {
+                    key: 0,
+                    value: null
+                }, "\u65e0"), y.a.createElement(N["a"].Option, {
+                    key: 1,
+                    value: "salamander"
+                }, "salamander"))), (parseInt(e.version) == 2 && e.obfs === "salamander") && y.a.createElement("div", {
+                    className: "form-group col-md-6 col-xs-12"
+                }, y.a.createElement("label", null, "\u6df7\u6dc6\u5bc6\u7801obfs_password"), y.a.createElement(s["a"], {
+                    value: e.obfs_password,
+                    placeholder: "\u7559\u7a7a\u81ea\u52a8\u751f\u6210",
+                    onChange: e=>this.formChange("obfs_password", e.target.value)
+                }))), y.a.createElement("div", {
+                    className: "row"
+                }, y.a.createElement("div", {
+                    className: "form-group col-md-6 col-xs-12"
                 }, y.a.createElement("label", null, "\u4e0a\u884c\u5e26\u5bbd"), y.a.createElement(s["a"], {
                     addonAfter: "Mbps",
                     placeholder: "\u8bf7\u6839\u636e\u5b9e\u9645\u7f51\u7edc\u60c5\u51b5\u5c3d\u91cf\u51c6\u786e\u5730\u586b\u5199",
                     value: e.up_mbps,
                     onChange: e=>this.formChange("up_mbps", e.target.value)
                 })), y.a.createElement("div", {
-                    className: "form-group"
+                    className: "form-group col-md-6 col-xs-12"
                 }, y.a.createElement("label", null, "\u4e0b\u884c\u5e26\u5bbd"), y.a.createElement(s["a"], {
                     addonAfter: "Mbps",
                     placeholder: "\u8bf7\u6839\u636e\u5b9e\u9645\u7f51\u7edc\u60c5\u51b5\u5c3d\u91cf\u51c6\u786e\u5730\u586b\u5199",
                     value: e.down_mbps,
                     onChange: e=>this.formChange("down_mbps", e.target.value)
-                })), y.a.createElement("div", {
+                }))), y.a.createElement("div", {
                     className: "form-group"
                 }, y.a.createElement("label", null, y.a.createElement(u["a"], {
                     placement: "top"
@@ -102155,7 +102199,7 @@
                 }, y.a.createElement(N["a"].Option, {
                     value: ""
                 }, "\u65e0"), n.map(t=>{
-                    if ("trojan" === t.type && t.id !== e.id)
+                    if ("hysteria" === t.type && t.id !== e.id)
                         return y.a.createElement(N["a"].Option, {
                             key: Math.random(),
                             value: t.id
