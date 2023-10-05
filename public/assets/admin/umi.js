@@ -102787,7 +102787,7 @@
                     dataIndex: "id",
                     key: "id",
                     width: 150,
-                    filters: ["Shadowsocks", "Vmess", "Trojan"].map(e=>({
+                    filters: ["Shadowsocks", "Vmess", "Trojan", "Hysteria", "Vless"].map(e=>({
                         text: e,
                         value: e
                     })),
