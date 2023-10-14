@@ -22201,6 +22201,14 @@
                     className: "form-group"
                 }, p.a.createElement("label", {
                     for: "example-text-input-alt"
+                }, "\u8bbe\u5907\u6570\u9650\u5236"), p.a.createElement(u["a"], {
+                    placeholder: "\u7559\u7a7a\u5219\u4e0d\u9650\u5236",
+                    defaultValue: t.device_limit,
+                    onChange: e=>this.formChange("device_limit", e.target.value)
+                })), p.a.createElement("div", {
+                    className: "form-group"
+                }, p.a.createElement("label", {
+                    for: "example-text-input-alt"
                 }, "\u5230\u671f\u65f6\u95f4"), p.a.createElement("div", null, p.a.createElement(c["a"], {
                     placeholder: "\u957f\u671f\u6709\u6548",
                     defaultValue: null !== t.expired_at && v()(1e3 * t.expired_at),
@@ -70665,6 +70673,14 @@
                         return e
                     }
                 }, {
+                    title: "\u8bbe\u5907\u6570\u9650\u5236",
+                    dataIndex: "device_limit",
+                    key: "device_limit",
+                    sorter: !0,
+                    render: (e,t)=>{
+                        return null !== e ? e : "-"
+                    }
+                }, {
                     title: "\u5230\u671f\u65f6\u95f4",
                     dataIndex: "expired_at",
                     key: "expired_at",
@@ -80496,6 +80512,20 @@
                     className: "form-group"
                 }, m.a.createElement("label", {
                     for: "example-text-input-alt"
+                }, "\u8bbe\u5907\u6570\u9650\u5236"), m.a.createElement(C["a"], {
+                    placeholder: "\u7559\u7a7a\u5219\u4e0d\u9650\u5236",
+                    value: this.state.record.device_limit,
+                    onChange: e=>{
+                        this.setState({
+                            record: d()({}, this.state.record, {
+                                device_limit: e.target.value
+                            })
+                        })
+                    }
+                })), m.a.createElement("div", {
+                    className: "form-group"
+                }, m.a.createElement("label", {
+                    for: "example-text-input-alt"
                 }, "\u6743\u9650\u7ec4 ", m.a.createElement(O["a"], null, m.a.createElement("a", {
                     href: "javascript:(0);"
                 }, "\u6dfb\u52a0\u6743\u9650\u7ec4"))), m.a.createElement(_["a"], {
@@ -80736,6 +80766,13 @@
                     key: "transfer_enable",
                     render: e=>{
                         return m.a.createElement(m.a.Fragment, null, e, " GB")
+                    }
+                }, {
+                    title: "\u8bbe\u5907\u6570\u9650\u5236",
+                    dataIndex: "device_limit",
+                    key: "device_limit",
+                    render: e=>{
+                        return null !== e ? e : "-"
                     }
                 }, {
                     title: "\u6708\u4ed8",
