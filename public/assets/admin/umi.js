@@ -70673,12 +70673,14 @@
                         return e
                     }
                 }, {
-                    title: "\u8bbe\u5907\u6570\u9650\u5236",
+                    title: "\u8bbe\u5907\u6570",
                     dataIndex: "device_limit",
                     key: "device_limit",
-                    sorter: !0,
+                    sorter: (e,t) => e.alive_ip - t.alive_ip,
                     render: (e,t)=>{
-                        return null !== e ? e : "-"
+                        var deviceCount = t.alive_ip !== null ? t.alive_ip : 0 ;
+                        var deviceLimit = t.device_limit !== null ? t.device_limit : "∞";
+                        return `${deviceCount} / ${deviceLimit}`;
                     }
                 }, {
                     title: "\u5230\u671f\u65f6\u95f4",
