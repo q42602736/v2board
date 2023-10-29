@@ -102297,6 +102297,7 @@
                     allow_insecure: 0
                 }),
                 this.state = {
+                    tls: this.props.tls,
                     settings: t
                 }
             }
@@ -102315,32 +102316,33 @@
                   , pv = e.private_key
                   , pb = e.public_key
                   , sd = e.short_id
-                  , pt = e.server_port;
+                  , pt = e.server_port
+                  , tls = this.state.tls;
                 return y.a.createElement(y.a.Fragment, null, y.a.createElement("div", null, y.a.createElement("div", {
                     className: "form-group"
                 }, y.a.createElement("label", null, "Server Name"), y.a.createElement(s["a"], {
                     value: t,
                     onChange: e=>this.change("server_name", e.target.value),
                     placeholder: "REALITY\u5fc5\u586b\uff0c\u4e0e\u540e\u7aef\u4fdd\u6301\u4e00\u81f4"
-                })), y.a.createElement("div", {
+                })), tls == 2 && y.a.createElement("div", {
                     className: "form-group"
                 }, y.a.createElement("label", null, "Server Port"), y.a.createElement(s["a"], {
                     value: pt,
                     onChange: e=>this.change("server_port", e.target.value),
                     placeholder: "REALITY\u76ee\u6807\u7aef\u53e3,\u9ed8\u8ba4443"
-                })), y.a.createElement("div", {
+                })), tls == 2 && y.a.createElement("div", {
                     className: "form-group"
                 }, y.a.createElement("label", null, "Private Key"), y.a.createElement(s["a"], {
                     value: pv,
                     onChange: e=>this.change("private_key", e.target.value),
                     placeholder: "\u7559\u7a7a\u81ea\u52a8\u751f\u6210"
-                })), y.a.createElement("div", {
+                })), tls == 2 && y.a.createElement("div", {
                     className: "form-group"
                 }, y.a.createElement("label", null, "Public Key"), y.a.createElement(s["a"], {
                     value: pb,
                     onChange: e=>this.change("public_key", e.target.value),
                     placeholder: "\u7559\u7a7a\u81ea\u52a8\u751f\u6210"
-                })), y.a.createElement("div", {
+                })), tls == 2 && y.a.createElement("div", {
                     className: "form-group"
                 }, y.a.createElement("label", null, "ShortId"), y.a.createElement(s["a"], {
                     value: sd,
@@ -102467,6 +102469,7 @@
                 case "tls_settings":
                     return y.a.createElement(U, {
                         settings: n,
+                        tls: e.tls,
                         onChange: e=>this.changeServer("tls_settings", e)
                     })
                 }
