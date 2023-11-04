@@ -102100,7 +102100,7 @@
                 }, y.a.createElement("div", {
                     className: "form-group col-md-3 col-xs-12"
                 }, y.a.createElement("label", null, "HYSTERIA\u7248\u672c"), y.a.createElement(N["a"], {
-                    value: parseInt(e.version),
+                    value: parseInt(e.version) ? 2 : 1,
                     style: {
                         width: "100%"
                     },
