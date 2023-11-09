@@ -102100,7 +102100,7 @@
                 }, y.a.createElement("div", {
                     className: "form-group col-md-3 col-xs-12"
                 }, y.a.createElement("label", null, "HYSTERIA\u7248\u672c"), y.a.createElement(N["a"], {
-                    value: parseInt(e.version),
+                    value: parseInt(e.version) ? parseInt(e.version) : 1,
                     style: {
                         width: "100%"
                     },
@@ -109402,7 +109402,8 @@
           , p = (n("lc5D"),
         n("VeWa"),
         n("umNf"),
-        n("8zNj"));
+        n("8zNj"))
+          , q = n.n(n("lc5D"));
         class m extends f.a.Component {
             constructor(e) {
                 super(e),
@@ -109418,12 +109419,20 @@
                 }
             }
             onShow() {
-                this.setState({
+                if (this.setState({
                     visible: !this.state.visible
-                })
+                }),
+                this.state.server.network_settings && "object" === typeof this.state.server.network_settings) {
+                    var e = this.state.server;
+                    e.network_settings = JSON.stringify(e["networkSettings"], null, 2),
+                    this.setState({
+                        server: e
+                    })
+                }
             }
             save() {
                 var e = this.state.server;
+                e.network_settings = e.network_settings ? "string" === typeof e.network_settings && JSON.parse(e.network_settings) : null;
                 this.props.dispatch({
                     type: "serverTrojan/save",
                     params: e,
@@ -109448,6 +109457,52 @@
                     })
                 })
             }
+            renderChildDrawer() {
+                var e = this.state.server
+                  , t = e.network_settings;
+                switch (this.state.childDrawer.type) {
+                case "network_settings":
+                    var o = {
+                        tcp: "",
+                        ws: JSON.stringify({
+                            path: "/",
+                            headers: {
+                                Host: "v2ray.com"
+                            }
+                        }, null, 4),
+                        grpc: JSON.stringify({
+                            serviceName: "GunService"
+                        }, null, 4)
+                    };
+                    return f.a.createElement("div", {
+                        id: "v2ray-protocol"
+                    }, f.a.createElement("div", {
+                        className: "form-group"
+                    }, f.a.createElement("label", null, "\u534f\u8bae\u8be6\u7ec6\u914d\u7f6e", f.a.createElement("a", {
+                        href: "https://www.v2ray.com/chapter_02/05_transport.html"
+                    }, f.a.createElement(a["a"], {
+                        type: "link"
+                    }), "\u53c2\u8003")), f.a.createElement(q.a, {
+                        placeholder: (null === o || void 0 === o ? void 0 : o[this.state.server.network]) || "",
+                        mode: "json",
+                        theme: "github",
+                        fontSize: 14,
+                        showPrintMargin: !0,
+                        showGutter: !0,
+                        highlightActiveLine: !0,
+                        value: t || "",
+                        onChange: e=>this.formChange("network_settings", e),
+                        setOptions: {
+                            enableBasicAutocompletion: !1,
+                            enableLiveAutocompletion: !1,
+                            enableSnippets: !1,
+                            showLineNumbers: !0,
+                            tabSize: 2
+                        },
+                        ref: "editor"
+                    })));
+                }
+            }
             formChange(e, t) {
                 this.setState({
                     server: u()({}, this.state.server, {
@@ -109462,9 +109517,7 @@
                   , c = this.props.serverGroup.groups
                   , u = this.props.serverRoute.routes;
                 return f.a.createElement(f.a.Fragment, null, f.a.cloneElement(this.props.children, {
-                    onClick: ()=>this.setState({
-                        visible: !0
-                    })
+                    onClick: ()=>this.onShow()
                 }), f.a.createElement(r["a"], {
                     id: "server",
                     maskClosable: !0,
@@ -109567,6 +109620,26 @@
                     value: e.server_name,
                     onChange: e=>this.formChange("server_name", e.target.value)
                 })), f.a.createElement("div", {
+                    className: "row"
+                }, f.a.createElement("div", {
+                    className: "form-group col-md-12 col-xs-12"
+                }, f.a.createElement("label", null, "\u4f20\u8f93\u534f\u8bae ", f.a.createElement("a", {
+                    href: "javascript:void(0);",
+                    onClick: ()=>this.showChildDrawer("\u7f16\u8f91\u534f\u8bae\u914d\u7f6e", "network_settings")
+                }, "\u7f16\u8f91\u914d\u7f6e")), f.a.createElement(s["a"], {
+                    value: e.network,
+                    placeholder: "\u9009\u62e9\u4f20\u8f93\u534f\u8bae",
+                    style: {
+                        width: "100%"
+                    },
+                    onChange: e=>this.formChange("network", e)
+                }, f.a.createElement(s["a"].Option, {
+                    value: "tcp"
+                }, "TCP"), f.a.createElement(s["a"].Option, {
+                    value: "ws"
+                }, "WebSocket"), f.a.createElement(s["a"].Option, {
+                    value: "grpc"
+                }, "gRPC")))), f.a.createElement("div", {
                     className: "form-group"
                 }, f.a.createElement("label", null, f.a.createElement(o["a"], {
                     placement: "top"
@@ -109615,7 +109688,14 @@
                     loading: t,
                     onClick: ()=>this.save(),
                     type: "primary"
-                }, "\u63d0\u4ea4"))))
+                }, "\u63d0\u4ea4")), f.a.createElement(r["a"], {
+                    closable: !1,
+                    id: "server",
+                    width: "80%",
+                    title: this.state.childDrawer.title,
+                    visible: this.state.childDrawer.visible,
+                    onClose: ()=>this.showChildDrawer()
+                }, this.renderChildDrawer())))
             }
         }
         t["a"] = Object(d["c"])(e=>{
