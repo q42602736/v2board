@@ -109424,7 +109424,7 @@
                 }),
                 this.state.server.network_settings && "object" === typeof this.state.server.network_settings) {
                     var e = this.state.server;
-                    e.network_settings = JSON.stringify(e["networkSettings"], null, 2),
+                    e.network_settings = JSON.stringify(e["network_settings"], null, 2),
                     this.setState({
                         server: e
                     })
