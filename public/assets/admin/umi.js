@@ -102317,13 +102317,20 @@
                   , pb = e.public_key
                   , sd = e.short_id
                   , pt = e.server_port
+                  , ds = e.dest
                   , tls = this.state.tls;
                 return y.a.createElement(y.a.Fragment, null, y.a.createElement("div", null, y.a.createElement("div", {
                     className: "form-group"
-                }, y.a.createElement("label", null, "Server Name"), y.a.createElement(s["a"], {
+                }, y.a.createElement("label", null, "Server Name(SNI)"), y.a.createElement(s["a"], {
                     value: t,
                     onChange: e=>this.change("server_name", e.target.value),
                     placeholder: "REALITY\u5fc5\u586b\uff0c\u4e0e\u540e\u7aef\u4fdd\u6301\u4e00\u81f4"
+                })), tls == 2 && y.a.createElement("div", {
+                    className: "form-group"
+                }, y.a.createElement("label", null, "Server Address"), y.a.createElement(s["a"], {
+                    value: ds,
+                    onChange: e=>this.change("dest", e.target.value),
+                    placeholder: "REALITY\u76ee\u6807\u5730\u5740\u002c\u9ed8\u8ba4\u4f7f\u7528SNI"
                 })), tls == 2 && y.a.createElement("div", {
                     className: "form-group"
                 }, y.a.createElement("label", null, "Server Port"), y.a.createElement(s["a"], {
