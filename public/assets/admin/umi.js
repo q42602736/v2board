@@ -42504,6 +42504,32 @@
                                 }
                         }, e)
                     })()
+                },
+                getServerTodayRank(e) {
+                    var t = e.complete;
+                    return a().mark(function e() {
+                        var n;
+                        return a().wrap(function(e) {
+                            while (1)
+                                switch (e.prev = e.next) {
+                                case 0:
+                                    return e.next = 2,
+                                    Object(o["a"])("/" + window.settings.secure_path + "/stat/getServerTodayRank");
+                                case 2:
+                                    if (n = e.sent,
+                                    200 === n.code) {
+                                        e.next = 5;
+                                        break
+                                    }
+                                    return e.abrupt("return");
+                                case 5:
+                                    t(n.data);
+                                case 6:
+                                case "end":
+                                    return e.stop()
+                                }
+                        }, e)
+                    })()
                 }
             }
         }
@@ -70675,7 +70701,7 @@
                 }, {
                     title: "\u8bbe\u5907\u6570",
                     dataIndex: "device_limit",
-                    key: "device_limit",
+                    key: "updated_at",
                     sorter: (e,t) => e.alive_ip - t.alive_ip,
                     render: (e,t)=>{
                         var deviceCount = t.alive_ip !== null ? t.alive_ip : 0 ;
@@ -95905,7 +95931,9 @@
                 this.orderChart = l.a.createRef(),
                 this.orderChartObj = void 0,
                 this.serverLastRankChart = l.a.createRef(),
-                this.serverLastRankChartObj = void 0
+                this.serverTodayRankChart = l.a.createRef(),
+                this.serverLastRankChartObj = void 0,
+                this.serverTodayRankChartObj = void 0
             }
             orderChartRender(e) {
                 var t;
@@ -95988,9 +96016,46 @@
                 ),
                 this.serverLastRankChartObj.setOption(n)
             }
+            serverTodayRankChartRender(e) {
+                var t;
+                this.serverTodayRankChartObj = g["b"](null === (t = this.serverTodayRankChart) || void 0 === t ? void 0 : t.current);
+                var n = {
+                    tooltip: {
+                        trigger: "axis",
+                        formatter: e=>{
+                            return "".concat(e[0].value, " GB")
+                        }
+                    },
+                    grid: {
+                        top: "1%",
+                        left: "1%",
+                        right: "1%",
+                        bottom: "3%",
+                        containLabel: !0
+                    },
+                    xAxis: {
+                        type: "value"
+                    },
+                    yAxis: {
+                        type: "category",
+                        data: []
+                    },
+                    series: [{
+                        data: [],
+                        type: "bar"
+                    }]
+                };
+                e.reverse().forEach(e=>{
+                    n.yAxis.data.push(e.server_name),
+                    n.series[0].data.push(e.total)
+                }
+                ),
+                this.serverTodayRankChartObj.setOption(n)
+            }
             chartResize() {
                 this.orderChartObj.resize(),
-                this.serverLastRankChartObj.resize()
+                this.serverLastRankChartObj.resize(),
+                this.serverTodayRankChartObj.resize()
             }
             componentDidMount() {
                 var e = this;
@@ -96020,6 +96085,12 @@
                     type: "stat/getServerLastRank",
                     complete: e=>{
                         this.serverLastRankChartRender(e)
+                    }
+                }),
+                this.props.dispatch({
+                    type: "stat/getServerTodayRank",
+                    complete: e=>{
+                        this.serverTodayRankChartRender(e)
                     }
                 }),
                 this.props.dispatch({
@@ -96244,12 +96315,30 @@
                     },
                     ref: this.orderChart
                 })))), l.a.createElement("div", {
-                    className: "row no-gutters mt-xl-3"
+                    className: "row mt-xl-3"
                 }, l.a.createElement("div", {
-                    className: "col-lg-12 js-appear-enabled animated",
+                    className: "col-lg-6 js-appear-enabled animated pr-xl-1",
                     "data-toggle": "appear"
                 }, l.a.createElement("div", {
-                    className: "block border-bottom mb-0"
+                    className: "block border-bottom"
+                }, l.a.createElement("div", {
+                    class: "block-header block-header-default"
+                }, l.a.createElement("h3", {
+                    class: "block-title"
+                }, "\u4eca\u65e5\u8282\u70b9\u6d41\u91cf\u6392\u884c")), l.a.createElement("div", {
+                    className: "block-content"
+                }, l.a.createElement("div", {
+                    className: "px-sm-3 pt-sm-3 py-3 clearfix",
+                    id: "serverTodayRankChart",
+                    style: {
+                        height: 400
+                    },
+                    ref: this.serverTodayRankChart
+                })))), l.a.createElement("div", {
+                    className: "col-lg-6 js-appear-enabled animated",
+                    "data-toggle": "appear"
+                }, l.a.createElement("div", {
+                    className: "block border-bottom"
                 }, l.a.createElement("div", {
                     class: "block-header block-header-default"
                 }, l.a.createElement("h3", {
@@ -96258,7 +96347,7 @@
                     className: "block-content"
                 }, l.a.createElement("div", {
                     className: "px-sm-3 pt-sm-3 py-3 clearfix",
-                    id: "serverRankChart",
+                    id: "serverLastRankChart",
                     style: {
                         height: 400
                     },
