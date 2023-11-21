@@ -12288,7 +12288,18 @@
                 switch (this.state.childDrawer.type) {
                 case "networkSettings":
                     var o = {
-                        tcp: "",
+                        tcp: JSON.stringify({
+                            header: {
+                                "type": "http",
+                                "request": {
+                                    "path": ["/"],
+                                    "headers": {
+                                        "Host": ["www.baidu.com", "www.bing.com"]
+                                    }
+                                },
+                                "response": {}
+                            }
+                        }, null, 4),
                         ws: JSON.stringify({
                             path: "/",
                             headers: {
@@ -102572,7 +102583,18 @@
                 switch (this.state.childDrawer.type) {
                 case "network_settings":
                     var r = {
-                        tcp: "",
+                        tcp: JSON.stringify({
+                            header: {
+                                "type": "http",
+                                "request": {
+                                    "path": ["/"],
+                                    "headers": {
+                                        "Host": ["www.baidu.com", "www.bing.com"]
+                                    }
+                                },
+                                "response": {}
+                            }
+                        }, null, 4),
                         ws: JSON.stringify({
                             path: "/",
                             headers: {
@@ -102584,7 +102606,7 @@
                         }, null, 4),
                         h2: JSON.stringify({
                             "path": "/",
-                            "host": "v2ray.com"
+                            "host": "xtls.github.io"
                         }, null, 4)
                     };
                     return y.a.createElement("div", {
