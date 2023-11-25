@@ -70646,6 +70646,21 @@
                     cancelText: "\u53d6\u6d88"
                 })
             }
+            delUser(e) {
+                var t = this;
+                p["a"].confirm({
+                    title: "\u5220\u9664\u7528\u6237",
+                    content: "\u786e\u5b9a\u8981\u5220\u9664".concat(e.email, "\u7684\u7528\u6237\u4fe1\u606f\u5417\uff1f"),
+                    onOk() {
+                        t.props.dispatch({
+                            type: "user/delUser",
+                            id: e.id
+                        })
+                    },
+                    okText: "\u786e\u5b9a",
+                    cancelText: "\u53d6\u6d88"
+                })
+            }
             render() {
                 var e, t, n, r, o, p, m = this.props.user, b = m.users, x = m.pagination, _ = m.fetchLoading, E = m.filter, M = this.props.serverGroup.groups, R = this.props.plan.plans, N = [{
                     title: "ID",
@@ -70799,7 +70814,11 @@
                                 key: null === t || void 0 === t ? void 0 : t.email
                             }, g.a.createElement("a", null, g.a.createElement(u["a"], {
                                 type: "solution"
-                            }), " TA\u7684\u6d41\u91cf\u8bb0\u5f55"))))
+                            }), " TA\u7684\u6d41\u91cf\u8bb0\u5f55"))), g.a.createElement(c["a"].Item, null, g.a.createElement("a", {
+                                onClick: ()=>this.delUser(t)
+                            }, g.a.createElement(u["a"], {
+                                type: "delete"
+                            }), " \u5220\u9664\u7528\u6237")))
                         }, g.a.createElement("a", {
                             href: "javascript:void(0);"
                         }, "\u64cd\u4f5c ", g.a.createElement(u["a"], {
@@ -80008,6 +80027,39 @@
                                     return e.abrupt("return");
                                 case 5:
                                     return r["a"].success("\u91cd\u7f6e\u6210\u529f"),
+                                    e.next = 8,
+                                    i({
+                                        type: "fetch"
+                                    });
+                                case 8:
+                                case "end":
+                                    return e.stop()
+                                }
+                        }, e)
+                    })()
+                },
+                delUser(e, t) {
+                    var n = e.id
+                      , i = t.put;
+                    return f().mark(function e() {
+                        var t;
+                        return f().wrap(function(e) {
+                            while (1)
+                                switch (e.prev = e.next) {
+                                case 0:
+                                    return e.next = 2,
+                                    Object(a["b"])("/" + window.settings.secure_path + "/user/delUser", {
+                                        id: n
+                                    });
+                                case 2:
+                                    if (t = e.sent,
+                                    200 === t.code) {
+                                        e.next = 5;
+                                        break
+                                    }
+                                    return e.abrupt("return");
+                                case 5:
+                                    return r["a"].success("\u5220\u9664\u6210\u529f"),
                                     e.next = 8,
                                     i({
                                         type: "fetch"
