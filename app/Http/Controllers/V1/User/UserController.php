@@ -162,7 +162,8 @@ class UserController extends Controller
         }
         $user['alive_ip'] = $countalive;
 
-        $user['subscribe_url'] = Helper::getSubscribeUrl("/api/v1/client/subscribe?token={$user['token']}");
+        $user['subscribe_url'] = Helper::getSubscribeUrl($user['token']);
+
         $userService = new UserService();
         $user['reset_day'] = $userService->getResetDay($user);
         return response([
@@ -182,7 +183,7 @@ class UserController extends Controller
             abort(500, __('Reset failed'));
         }
         return response([
-            'data' => Helper::getSubscribeUrl('/api/v1/client/subscribe?token=' . $user->token)
+            'data' => Helper::getSubscribeUrl($user['token'])
         ]);
     }
 
