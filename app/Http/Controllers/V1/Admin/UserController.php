@@ -309,11 +309,19 @@ class UserController extends Controller
     {
         $user = User::find($request->input('id'));
         if (!$user) abort(500, '用户不存在');
+        
         try {
             $deletedOrders = Order::where('user_id', $request->input('id'))->delete();
         } catch (\Exception $e) {
             abort(500, '删除用户订单失败');
         }
+
+        try {
+            $inviteUser = User::where('invite_user_id', $request->input('id'))->update(['invite_user_id' => null]);
+        } catch (\Exception $e) {
+            abort(500, '更新受邀用户失败');
+        }
+        
         return response([
             'data' => $user->delete()
         ]);
