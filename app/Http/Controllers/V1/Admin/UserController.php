@@ -319,7 +319,7 @@ class UserController extends Controller
         try {
             $inviteUser = User::where('invite_user_id', $request->input('id'))->update(['invite_user_id' => null]);
         } catch (\Exception $e) {
-            abort(500, '更新受邀用户失败');
+            abort(500, '删除用户邀请人失败');
         }
         
         return response([
