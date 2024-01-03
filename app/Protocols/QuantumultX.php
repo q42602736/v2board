@@ -73,6 +73,7 @@ class QuantumultX
                     $host = $tlsSettings['serverName'];
             }
         }
+        /*
         if ($server['network'] === 'ws') {
             if ($server['tls'])
                 array_push($config, 'obfs=wss');
@@ -86,6 +87,7 @@ class QuantumultX
                     $host = $wsSettings['headers']['Host'];
             }
         }
+        */
         if (isset($host)) {
             array_push($config, "obfs-host={$host}");
         }
@@ -113,12 +115,12 @@ class QuantumultX
                 array_push($config, 'obfs=wss');
             else
                 array_push($config, 'obfs=ws');
-            if ($server['networkSettings']) {
-                $wsSettings = $server['networkSettings'];
+            if ($server['network_settings']) {
+                $wsSettings = $server['network_settings'];
                 if (isset($wsSettings['path']) && !empty($wsSettings['path']))
                     array_push($config, "obfs-uri={$wsSettings['path']}");
                 if (isset($wsSettings['headers']['Host']) && !empty($wsSettings['headers']['Host']) && !isset($host))
-                    $host = $wsSettings['headers']['Host'];
+                    array_push($config, "obfs-host={$host}");
             }
         }
         $config = array_filter($config);
