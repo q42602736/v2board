@@ -33,8 +33,8 @@ Route::get('/', function (Request $request) {
         $themeService->init();
     }
 
-    $renderParams['theme_config'] = config('theme.' . config('v2board.frontend_theme', 'v2board'));
-    return view('theme::' . config('v2board.frontend_theme', 'v2board') . '.dashboard', $renderParams);
+    $renderParams['theme_config'] = config('theme.' . config('v2board.frontend_theme', 'default'));
+    return view('theme::' . config('v2board.frontend_theme', 'default') . '.dashboard', $renderParams);
 });
 
 //TODO:: 兼容
