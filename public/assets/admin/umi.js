@@ -21055,7 +21055,7 @@
                 }
                 ))), o.a.createElement("div", {
                     className: "v2board-copyright"
-                }, window.settings.title ? window.settings.title : "V2Board", " v1.7.4"))
+                }, window.settings.title ? window.settings.title : "V2Board", " v1.7.5"))
             }
         }
         var u = Object(l["c"])(e=>{
@@ -102320,6 +102320,7 @@
                 this.state = {
                     server: this.props.record || {
                         insecure: 0,
+                        version: 1,
                         rate: 1
                     },
                     visible: !1,
