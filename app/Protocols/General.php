@@ -256,7 +256,7 @@ class General
                 $uri .= "&obfs={$server['obfs']}&obfsParam{$server['obfs_password']}";
             }
         }
-        if (count($parts) !== 1 || strpos($parts[0], '-') === true) {
+        if (count($parts) !== 1 || strpos($parts[0], '-') !== false) {
             $uri .= "&mport={$server['mport']}";
         }
         $uri .= "#{$name}\r\n";

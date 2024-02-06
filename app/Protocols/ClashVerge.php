@@ -280,7 +280,7 @@ class ClashVerge
             $firstPort = $firstPart;
         }
         $array['port'] = (int)$firstPort;
-        if (count($parts) !== 1 || strpos($parts[0], '-') === true) {
+        if (count($parts) !== 1 || strpos($parts[0], '-') !== false) {
             $array['ports'] = $server['port'];
             $array['mport'] = $server['port'];   
         }
