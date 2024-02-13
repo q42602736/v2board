@@ -5722,7 +5722,16 @@
                     className: "form-control",
                     placeholder: "\u8bf7\u8f93\u5165\u8ba2\u9605URL\uff0c\u672b\u5c3e\u4e0d\u8981/\u3002\u9017\u53f7\u5206\u5272\u652f\u6301\u591a\u57df\u540d",
                     defaultValue: t.subscribe_url,
-                    onChange: e=>this.set("site", "subscribe_url", e.target.value)
+                    onChange: e => this.set("site", "subscribe_url", e.target.value)
+                })), f.a.createElement(m, {
+                    title: "\u8ba2\u9605\u8def\u5f84",
+                    description: "\u7528\u4e8e\u8ba2\u9605\u6240\u4f7f\u7528\uff0c\u7559\u7a7a\u5219\u4e3a/api/v1/client/subscribe\u3002\u5982\u9700\u66f4\u6362\u4e0d\u540c\u7684\u8ba2\u9605\u8def\u5f84\u8bf7\u8bbe\u7f6e\u3002"
+                }, f.a.createElement("input", {
+                    type: "text",
+                    className: "form-control",
+                    placeholder: "/api/v1/client/subscribe",
+                    defaultValue: t.subscribe_path,
+                    onChange: e => this.set("site", "subscribe_path", e.target.value)
                 })), f.a.createElement(m, {
                     title: "\u7528\u6237\u6761\u6b3e(TOS)URL",
                     description: "\u7528\u4e8e\u8df3\u8f6c\u5230\u7528\u6237\u6761\u6b3e(TOS)"

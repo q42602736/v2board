@@ -19,8 +19,5 @@ class ClientRoute
             $router->get('/app/getConfig', 'V1\\Client\\AppController@getConfig');
             $router->get('/app/getVersion', 'V1\\Client\\AppController@getVersion');
         });
-        if (config('v2board.subscribe_path')) {
-            \Route::get(config('v2board.subscribe_path'), 'V1\\Client\\ClientController@subscribe');
-        }
     }
 }
