@@ -194,8 +194,8 @@ class Surge
             // 'tfo=true', 
             'udp-relay=true'
         ];
-        if (!empty($server['allow_insecure'])) {
-            array_push($config, $server['allow_insecure'] ? 'skip-cert-verify=true' : 'skip-cert-verify=false');
+        if (!empty($server['insecure'])) {
+            array_push($config, $server['insecure'] ? 'skip-cert-verify=true' : 'skip-cert-verify=false');
         }
         $config = array_filter($config);
         $uri = implode(',', $config);
