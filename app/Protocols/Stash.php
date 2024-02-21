@@ -288,7 +288,7 @@ class Stash
 
         if ($server['version'] === 2) {
             $array['type'] = 'hysteria2';
-            $array['password'] = $password;
+            $array['auth'] = $password;
             if (isset($server['obfs'])){
                 $array['obfs'] = $server['obfs'];
                 $array['obfs-password'] = $server['obfs_password'];
