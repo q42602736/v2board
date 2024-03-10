@@ -70673,6 +70673,17 @@
                     }
                 })
             }
+            allDel() {
+                p["a"].confirm({
+                    title: "\u63d0\u9192",
+                    content: "\u786e\u5b9a\u8981\u8fdb\u884c\u5220\u9664\u5417\uff1f",
+                    onOk: ()=>{
+                        this.props.dispatch({
+                            type: "user/allDel"
+                        })
+                    }
+                })
+            }
             userFilter(e, t, n) {
                 var r = arguments.length > 3 && void 0 !== arguments[3] && arguments[3];
                 this.props.dispatch({
@@ -70923,10 +70934,12 @@
                         title: "\u8ba2\u9605",
                         condition: ["="],
                         type: "select",
-                        options: R.map(e=>({
+                        options:[{
+                            key: "\u65e0\u8ba2\u9605",
+                            value: "null" }, ...R.map(e=>({
                             key: e.name,
                             value: e.id
-                        }))
+                        }))]
                     }, {
                         key: "transfer_enable",
                         title: "\u6d41\u91cf",
@@ -71003,7 +71016,14 @@
                         onClick: ()=>this.ban()
                     }, g.a.createElement(u["a"], {
                         type: "stop"
-                    }), " \u6279\u91cf\u5c01\u7981")))
+                    }), " \u6279\u91cf\u5c01\u7981")), g.a.createElement(c["a"].Item, {
+                        disabled: !E.length
+                    }, g.a.createElement("a", {
+                        disabled: !E.length,
+                        onClick: ()=>this.allDel()
+                    }, g.a.createElement(u["a"], {
+                        type: "delete"
+                    }), " \u6279\u91cf\u5220\u9664")))
                 }, g.a.createElement(s["a"], null, g.a.createElement(u["a"], {
                     type: "select"
                 }), "\u64cd\u4f5c")))), g.a.createElement(T["a"], null, g.a.createElement(s["a"], {
@@ -71086,7 +71106,13 @@
                     key: null === (p = this.record) || void 0 === p ? void 0 : p.email
                 }, g.a.createElement("a", null, g.a.createElement(u["a"], {
                     type: "solution"
-                }), " TA\u7684\u6d41\u91cf\u8bb0\u5f55")))))))))
+                }), " TA\u7684\u6d41\u91cf\u8bb0\u5f55"))), g.a.createElement("li", {
+                    className: "ant-dropdown-menu-item"
+                }, g.a.createElement("a", {
+                    onClick: ()=>this.delUser(this.record)
+                }, g.a.createElement(u["a"], {
+                    type: "delete"
+                }), " \u5220\u9664\u7528\u6237"))))))))
             }
         }
         t["default"] = Object(E["c"])(e=>{
@@ -80126,6 +80152,43 @@
                                         type: "fetch"
                                     });
                                 case 8:
+                                case "end":
+                                    return e.stop()
+                                }
+                        }, e)
+                    })()
+                },
+                allDel(e, t) {
+                    var n = t.select
+                      , r = t.put;
+                    return f().mark(function e() {
+                        var t, i, o;
+                        return f().wrap(function(e) {
+                            while (1)
+                                switch (e.prev = e.next) {
+                                case 0:
+                                    return e.next = 2,
+                                    n(e=>e.user);
+                                case 2:
+                                    return t = e.sent,
+                                    i = t.filter,
+                                    e.next = 6,
+                                    Object(a["b"])("/" + window.settings.secure_path + "/user/allDel", {
+                                        filter: i
+                                    });
+                                case 6:
+                                    if (o = e.sent,
+                                    200 === o.code) {
+                                        e.next = 9;
+                                        break
+                                    }
+                                    return e.abrupt("return");
+                                case 9:
+                                    return e.next = 11,
+                                    r({
+                                        type: "fetch"
+                                    });
+                                case 11:
                                 case "end":
                                     return e.stop()
                                 }
