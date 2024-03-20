@@ -23,13 +23,15 @@ class TicketController extends Controller
     
         if ($ticketId) {
             $ticket = Ticket::where('id', $ticketId)
-                            ->where('user_id', $userId)
                             ->firstOrFail();
-            $messages = TicketMessage::where('ticket_id', $ticket->id)->get();
-            foreach ($messages as $message) {
-                $message->is_me = $message->user_id == $userId;
+            $ticket['message'] = TicketMessage::where('ticket_id', $ticket->id)->get();
+            for ($i = 0; $i < count($ticket['message']); $i++) {
+                if ($ticket['message'][$i]['user_id'] !== $ticket->user_id) {
+                    $ticket['message'][$i]['is_me'] = true;
+                } else {
+                    $ticket['message'][$i]['is_me'] = false;
+                }
             }
-            $ticket->messages = $messages; 
             return response(['data' => $ticket]);
         }
         $ticket = Ticket::where('user_id', $userId)
