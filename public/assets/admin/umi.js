@@ -93976,6 +93976,9 @@
                         }, {
                             key: "\u5df2\u5b8c\u6210",
                             value: 3
+                        },{
+                            key: "\u5df2\u6298\u62b5",
+                            value: 4
                         }]
                     }, {
                         key: "commission_status",
