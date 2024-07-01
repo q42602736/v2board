@@ -6191,7 +6191,13 @@
                     placeholder: "\u8bf7\u8f93\u5165",
                     defaultValue: u.server_push_interval,
                     onChange: e=>this.set("server", "server_push_interval", e.target.value)
-                })))), f.a.createElement(s["a"].TabPane, {
+                }))), f.a.createElement(m, {
+                    title: "\u5168\u5c40\u8bbe\u5907\u6570\u9650\u5236\u91c7\u7528\u5bbd\u677e\u6a21\u5f0f",
+                    description: "\u5f00\u542f\u540e\u540c\u4e00IP\u5730\u5740\u4f7f\u7528\u591a\u4e2a\u8282\u70b9\u53ea\u7edf\u8ba1\u4e3a\u4e00\u4e2a\u8bbe\u5907"
+                }, f.a.createElement(l["a"], {
+                    checked: parseInt(u.device_limit_mode),
+                    onChange: e=>this.set("server", "device_limit_mode", e ? 1 : 0)
+                }))), f.a.createElement(s["a"].TabPane, {
                     tab: "\u90ae\u4ef6",
                     key: "email"
                 }, f.a.createElement("div", {
