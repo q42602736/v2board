@@ -10,6 +10,7 @@ class Singbox
     public $flag = 'sing-box';
     private $servers;
     private $user;
+    private $config;
 
     public function __construct($user, $servers, array $options = null)
     {
@@ -21,8 +22,9 @@ class Singbox
     {
         $appName = config('app_name', 'V2Board');
         $this->config = $this->loadConfig();
-        $outbounds = $this->buildOutbounds();
-        $config['outbounds'] = $outbounds;
+        $proxies = $this->buildProxies();
+        $outbounds = $this->addProxies($proxies);
+        $this->config['outbounds'] = $outbounds;
 
         return json_encode($this->config);
         //return response($config, 200);
@@ -37,25 +39,9 @@ class Singbox
         return json_decode($jsonData, true);
     }
 
-    protected function buildOutbounds()
+    protected function buildProxies()
     {
-        $outbounds = $this->config['outbounds'] ?? [];
         $proxies = [];
-    
-        $defaultOutbounds = [
-            ['type' => 'dns', 'tag' => 'dns-out'],
-            ['type' => 'direct', 'tag' => 'direct'],
-            ['type' => 'block', 'tag' => 'block'],
-            ['type' => 'selector', 'tag' => '节点选择', 'outbounds' => []],
-            ['type' => 'urltest', 'tag' => '自动选择', 'outbounds' => []],
-        ];
-
-        $outboundTypes = array_column($outbounds, 'type');
-        foreach ($defaultOutbounds as $default) {
-            if (!in_array($default['type'], $outboundTypes)) {
-                $outbounds[] = $default;
-            }
-        }
     
         foreach ($this->servers as $item) {
             if ($item['type'] === 'shadowsocks') {
@@ -79,17 +65,19 @@ class Singbox
                 $proxies[] = $hysteriaConfig;
             }
         }
+    
+        return $proxies;
+    }
 
-        foreach ($outbounds as &$outbound) {
-            if ($outbound['type'] === 'selector' || $outbound['type'] === 'urltest') {
+    protected function addProxies($proxies)
+    {
+        foreach ($this->config['outbounds'] as &$outbound) {
+            if (($outbound['type'] === 'selector' && $outbound['tag'] === '节点选择') || ($outbound['type'] === 'urltest' && $outbound['tag'] === '自动选择')) {
                 array_push($outbound['outbounds'], ...array_column($proxies, 'tag'));
             }
         }
-
-        $outbounds = array_merge($outbounds, $proxies);
-    
-        $this->config['outbounds'] = $outbounds;
-    
+        unset($outbound);
+        $outbounds = array_merge($this->config['outbounds'], $proxies);
         return $outbounds;
     }
 
