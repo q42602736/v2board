@@ -181,28 +181,35 @@ class Helper
 
     public static function buildVmessUri($uuid, $server)
     {
+        $name = self::encodeURIComponent($server['name']);
+
         $config = [
-            "v" => "2",
-            "ps" => $server['name'],
-            "add" => self::formatHost($server['host']),
-            "port" => (string)$server['port'],
-            "id" => $uuid,
-            "aid" => '0',
-            "net" => $server['network'],
             "type" => $server['network'],
+            "encryption" => "auto",
+            "aid" => "0",
             "host" => "",
             "path" => "",
-            "tls" => $server['tls'] ? "tls" : "",
+            "headerType" => "none",
+            "quicSecurity" => "none",
+            "serviceName" => "",
+            "mode" => "gun",
+            "security" => $server['tls'] ? "tls" : "",
+            "fp" => $server['tlsSettings']['fingerprint'] ?? 'chrome',
+            "sni" => "",
         ];
 
         if ($server['tls']) {
-            $tlsSettings = $server['tls_settings'] ?? $server['tlsSettings'] ?? [];
-            $config['sni'] = $tlsSettings['server_name'] ?? $tlsSettings['serverName'] ?? '';
+            $tlsSettings = $server['tls_settings'] ?? ($server['tlsSettings'] ?? []);
+            $config['sni'] = $tlsSettings['server_name'] ?? ($tlsSettings['serverName'] ?? '');
+            if ($server['tls'] == 2) {
+                $config['pbk'] = $tlsSettings['public_key'] ?? '';
+                $config['sid'] = $tlsSettings['short_id'] ?? '';
+            }
         }
         
         self::configureNetworkSettings($server, $config);
 
-        return "vmess://" . base64_encode(json_encode($config)) . "\r\n";
+        return self::buildUriString('vmess', $uuid, $server, $name, $config);
     }
 
     public static function buildVlessUri($uuid, $server)
@@ -227,8 +234,8 @@ class Helper
         ];
 
         if ($server['tls']) {
-            $tlsSettings = $server['tls_settings'] ?? ($server['tlsSettings'] ?? []);
-            $config['sni'] = $tlsSettings['server_name'] ?? ($tlsSettings['serverName'] ?? '');
+            $tlsSettings = $server['tls_settings'] ?? [];
+            $config['sni'] = $tlsSettings['server_name'] ?? '';
             if ($server['tls'] == 2) {
                 $config['pbk'] = $tlsSettings['public_key'] ?? '';
                 $config['sid'] = $tlsSettings['short_id'] ?? '';
@@ -323,7 +330,6 @@ class Helper
 
     public static function configureGrpcSettings($settings, &$config)
     {
-        $config['path'] = self::encodeURIComponent($settings['serviceName'] ?? '');
         $config['serviceName'] = self::encodeURIComponent($settings['serviceName'] ?? '');
     }
 
