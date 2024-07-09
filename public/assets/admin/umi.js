@@ -12323,6 +12323,27 @@
                         }, null, 4),
                         grpc: JSON.stringify({
                             serviceName: "GunService"
+                        }, null, 4),
+                        quic: JSON.stringify({
+                            security: "none",
+                            key: "",
+                            header: {
+                                type: "none"
+                            }
+                        }, null, 4),
+                        kcp: JSON.stringify({
+                            header: {
+                                type: "none"
+                            },
+                            seed: ""
+                        }, null, 4),
+                        httpupgrade: JSON.stringify({
+                            path: "/",
+                            host: "xtls.github.io"
+                        }, null, 4),
+                        splithttp: JSON.stringify({
+                            path: "/",
+                            host: "xtls.github.io"
                         }, null, 4)
                     };
                     return d.a.createElement("div", {
@@ -12496,7 +12517,15 @@
                     value: "ws"
                 }, "WebSocket"), d.a.createElement(a["a"].Option, {
                     value: "grpc"
-                }, "gRPC")))), d.a.createElement("div", {
+                }, "gRPC"), d.a.createElement(a["a"].Option, {
+                    value: "quic"
+                }, "QUIC"), d.a.createElement(a["a"].Option, {
+                    value: "kcp"
+                }, "mKCP"), d.a.createElement(a["a"].Option, {
+                    value: "httpupgrade"
+                }, "HTTPUpgrade"), d.a.createElement(a["a"].Option, {
+                    value: "splithttp"
+                }, "SplitHTTP")))), d.a.createElement("div", {
                     className: "form-group"
                 }, d.a.createElement("label", null, d.a.createElement(o["a"], {
                     placement: "top"
@@ -102917,8 +102946,29 @@
                             serviceName: "GunService"
                         }, null, 4),
                         h2: JSON.stringify({
-                            "path": "/",
-                            "host": "xtls.github.io"
+                            path: "/",
+                            host: "xtls.github.io"
+                        }, null, 4),
+                        quic: JSON.stringify({
+                            security: "none",
+                            key: "",
+                            header: {
+                                type: "none"
+                            }
+                        }, null, 4),
+                        kcp: JSON.stringify({
+                            header: {
+                                type: "none"
+                            },
+                            seed: ""
+                        }, null, 4),
+                        httpupgrade: JSON.stringify({
+                            path: "/",
+                            host: "xtls.github.io"
+                        }, null, 4),
+                        splithttp: JSON.stringify({
+                            path: "/",
+                            host: "xtls.github.io"
                         }, null, 4)
                     };
                     return y.a.createElement("div", {
@@ -103087,7 +103137,15 @@
                     value: "grpc"
                 }, "gRPC"), y.a.createElement(N["a"].Option, {
                     value: "h2"
-                }, "HTTP\/2")))), y.a.createElement("div", {
+                }, "HTTP\/2"), y.a.createElement(N["a"].Option, {
+                    value: "quic"
+                }, "QUIC"), y.a.createElement(N["a"].Option, {
+                    value: "kcp"
+                }, "mKCP"), y.a.createElement(N["a"].Option, {
+                    value: "httpupgrade"
+                }, "HTTPUpgrade"), y.a.createElement(N["a"].Option, {
+                    value: "splithttp"
+                }, "SplitHTTP")))), y.a.createElement("div", {
                     className: "row"
                 }, y.a.createElement("div", {
                     className: "form-group col-md-12 col-xs-12"

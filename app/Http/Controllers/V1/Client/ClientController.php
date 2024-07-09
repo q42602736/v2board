@@ -22,7 +22,7 @@ class ClientController extends Controller
         if ($userService->isAvailable($user)) {
             $serverService = new ServerService();
             $servers = $serverService->getAvailableServers($user);
-            if ($flag && !strpos($flag, 'sing-box')) {
+            if (!($flag && strpos($flag, 'sing-box'))) {
                 $this->setSubscribeInfoToServers($servers, $user);
             }
             if ($flag) {
