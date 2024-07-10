@@ -181,35 +181,77 @@ class Helper
 
     public static function buildVmessUri($uuid, $server)
     {
-        $name = self::encodeURIComponent($server['name']);
-
         $config = [
-            "type" => $server['network'],
-            "encryption" => "auto",
-            "aid" => "0",
-            "host" => "",
-            "path" => "",
-            "headerType" => "none",
-            "quicSecurity" => "none",
-            "serviceName" => "",
-            "mode" => "gun",
-            "security" => $server['tls'] ? "tls" : "",
-            "fp" => $server['tlsSettings']['fingerprint'] ?? 'chrome',
-            "sni" => "",
+            "v" => "2",
+            "ps" => $server['name'],
+            "add" => self::formatHost($server['host']),
+            "port" => (string)$server['port'],
+            "id" => $uuid,
+            "aid" => '0',
+            "scy" => 'auto',
+            "net" => $server['network'],
+            "type" => 'none',
+            "host" => '',
+            "path" => '',
+            "tls" => $server['tls'] ? "tls" : "",
+            "fp" => 'chrome',
         ];
 
         if ($server['tls']) {
-            $tlsSettings = $server['tls_settings'] ?? ($server['tlsSettings'] ?? []);
-            $config['sni'] = $tlsSettings['server_name'] ?? ($tlsSettings['serverName'] ?? '');
-            if ($server['tls'] == 2) {
-                $config['pbk'] = $tlsSettings['public_key'] ?? '';
-                $config['sid'] = $tlsSettings['short_id'] ?? '';
-            }
+            $tlsSettings = $server['tls_settings'] ?? $server['tlsSettings'] ?? [];
+            $config['sni'] = $tlsSettings['server_name'] ?? $tlsSettings['serverName'] ?? '';
         }
         
-        self::configureNetworkSettings($server, $config);
+        $network = (string)$server['network'];
+        $networkSettings = $server['networkSettings'] ?? [];
+    
+        switch ($network) {
+            case 'tcp':
+                if (!empty($networkSettings['header']['type']) && $networkSettings['header']['type'] === 'http') {
+                    $config['type'] = $networkSettings['header']['type'];
+                    $config['host'] = $networkSettings['header']['request']['headers']['Host'][0] ?? null;
+                    $config['path'] = $networkSettings['header']['request']['path'][0] ?? null;
+                }
+                break;
+    
+            case 'ws':
+                $config['path'] = $networkSettings['path'] ?? null;
+                $config['host'] = $networkSettings['headers']['Host'] ?? null;
+                break;
+    
+            case 'grpc':
+                $config['path'] = $networkSettings['serviceName'] ?? null;
+                break;
+            
+            case 'quic':
+                $config['host'] = $networkSettings['security'] ?? null;
+                if (!empty($config['host'])) {
+                    if (isset($networkSettings['key'])) {
+                        $config['path'] = $networkSettings['key'];
+                    }
+                }
+                $config['type'] = $networkSettings['header']['type'] ?? 'none';
+                break;
 
-        return self::buildUriString('vmess', $uuid, $server, $name, $config);
+            case 'kcp':
+                if (isset($networkSettings['seed'])) {
+                    $config['path'] = $networkSettings['seed'];
+                }
+                $config['type'] = $networkSettings['header']['type'] ?? 'none';
+                break;
+
+            case 'httpupgrade':
+                $config['path'] = $networkSettings['path'] ?? null;
+                $config['host'] = $networkSettings['headers']['Host'] ?? null;
+                break;
+            
+            case 'splithttp':
+                $config['path'] = $networkSettings['path'] ?? null;
+                $config['host'] = $networkSettings['headers']['Host'] ?? null;
+                break;
+        }
+
+        return "vmess://" . base64_encode(json_encode($config)) . "\r\n";
     }
 
     public static function buildVlessUri($uuid, $server)
