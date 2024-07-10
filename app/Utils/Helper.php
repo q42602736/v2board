@@ -295,9 +295,7 @@ class Helper
             'allowInsecure' => $server['allow_insecure'],
             'peer' => $server['server_name'],
             'sni' => $server['server_name'],
-            "host" => "",
-            "path" => "",
-            "serviceName" => "",
+            'type'=> $server['network'],
         ];
 
         self::configureNetworkSettings($server, $config);
