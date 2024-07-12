@@ -176,7 +176,7 @@ class Helper
         }
         $name = rawurlencode($server['name']);
         $str = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode("{$cipher}:{$password}"));
-        return self::buildUriString('ss', "{$str}", $server, $name);
+        return "ss://{$str}@{$server['host']}:{$server['port']}#{$name}\r\n";
     }
 
     public static function buildVmessUri($uuid, $server)

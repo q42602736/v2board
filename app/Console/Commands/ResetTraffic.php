@@ -105,7 +105,7 @@ class ResetTraffic extends Command
         }
     }
 
-    private function resetByExpireYear($builder):void
+    private function resetByExpireYear($builder): void
     {
         $users = [];
         foreach ($builder->get() as $item) {
@@ -115,33 +115,39 @@ class ResetTraffic extends Command
                 array_push($users, $item->id);
             }
         }
-        User::whereIn('id', $users)->update([
-            'u' => 0,
-            'd' => 0
-        ]);
+        $this->retryTransaction(function () use ($users) {
+            User::whereIn('id', $users)->update([
+                'u' => 0,
+                'd' => 0
+            ]);
+        });
     }
 
-    private function resetByYearFirstDay($builder):void
+    private function resetByYearFirstDay($builder): void
     {
         if ((string)date('md') === '0101') {
-            $builder->update([
-                'u' => 0,
-                'd' => 0
-            ]);
+            $this->retryTransaction(function () use ($builder) {
+                $builder->update([
+                    'u' => 0,
+                    'd' => 0
+                ]);
+            });
         }
     }
 
-    private function resetByMonthFirstDay($builder):void
+    private function resetByMonthFirstDay($builder): void
     {
         if ((string)date('d') === '01') {
-            $builder->update([
-                'u' => 0,
-                'd' => 0
-            ]);
+            $this->retryTransaction(function () use ($builder) {
+                $builder->update([
+                    'u' => 0,
+                    'd' => 0
+                ]);
+            });
         }
     }
 
-    private function resetByExpireDay($builder):void
+    private function resetByExpireDay($builder): void
     {
         $lastDay = date('d', strtotime('last day of +0 months'));
         $users = [];
@@ -167,9 +173,29 @@ class ResetTraffic extends Command
                 array_push($users, $item->id);
             }
         }
-        User::whereIn('id', $users)->update([
-            'u' => 0,
-            'd' => 0
-        ]);
+        $this->retryTransaction(function () use ($users) {
+            User::whereIn('id', $users)->update([
+                'u' => 0,
+                'd' => 0
+            ]);
+        });
+    }
+
+    private function retryTransaction($callback)
+    {
+        $attempts = 0;
+        $maxAttempts = 3;
+        while ($attempts < $maxAttempts) {
+            try {
+                DB::transaction($callback);
+                return;
+            } catch (\Exception $e) {
+                $attempts++;
+                if ($attempts >= $maxAttempts || strpos($e->getMessage(), '40001') === false && strpos(strtolower($e->getMessage()), 'deadlock') === false) {
+                    abort(500, '用户流量重置失败'. $e->getMessage());
+                }
+                sleep(5);
+            }
+        }
     }
 }
