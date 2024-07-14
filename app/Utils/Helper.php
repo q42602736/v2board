@@ -298,7 +298,19 @@ class Helper
             'type'=> $server['network'],
         ];
 
-        self::configureNetworkSettings($server, $config);
+        if(isset($server['network']) && in_array($server['network'], ["grpc", "ws"])){
+            if($server['network'] === "grpc" && isset($server['network_settings']['serviceName'])) {
+                $config['serviceName'] = $server['network_settings']['serviceName'];
+            }
+            if($server['network'] === "ws") {
+                if(isset($server['network_settings']['path'])) {
+                    $config['path'] = $server['network_settings']['path'];
+                }
+                if(isset($server['network_settings']['headers']['Host'])) {
+                    $config['host'] = Helper::encodeURIComponent($server['network_settings']['headers']['Host']);
+                }
+            }
+        }
         $query = http_build_query($config);
         return "trojan://{$password}@" . self::formatHost($server['host']) . ":{$server['port']}?{$query}#". rawurlencode($server['name']) . "\r\n";
     }
