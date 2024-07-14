@@ -26,7 +26,8 @@ class Singbox
         $outbounds = $this->addProxies($proxies);
         $this->config['outbounds'] = $outbounds;
 
-        return response($this->config, 200)
+        return response(json_encode($this->config, JSON_UNESCAPED_SLASHES), 200)
+            ->header('Content-Type', 'application/json')
             ->header('content-disposition', 'attachment;filename*=UTF-8\'\'' . rawurlencode($appName));
     }
 
