@@ -70839,7 +70839,10 @@
                     render: (e,t)=>{
                         var deviceCount = t.alive_ip !== null ? t.alive_ip : 0 ;
                         var deviceLimit = t.device_limit !== null ? t.device_limit : "∞";
-                        return `${deviceCount} / ${deviceLimit}`;
+                        return t.ips ? g.a.createElement(f["a"], {
+                            placement: "top",
+                            title: t.ips
+                        }, `${deviceCount} / ${deviceLimit}`) : `${deviceCount} / ${deviceLimit}`
                     }
                 }, {
                     title: "\u5230\u671f\u65f6\u95f4",
