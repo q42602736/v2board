@@ -32,11 +32,101 @@ class Shadowrocket
         foreach ($this->servers as $server) {
             if ($server['type'] === 'vmess'){
                 $uri .= self::buildVmess($user['uuid'], $server);
+            } elseif ($server['type'] === 'vless') {
+                $uri .= self::buildVless($user['uuid'], $server);
             } else {
                 $uri .= Helper::buildUri($this->user['uuid'], $server);
             }
         }
         return base64_encode($uri);
+    }
+
+    public static function buildVless($uuid, $server)
+    {
+        $config = [
+            "name" => Helper::encodeURIComponent($server['name']),
+            "add" => $server['host'],
+            "port" => (string)$server['port'],
+            "type" => $server['network'],
+            "encryption" => "none",
+            "host" => "",
+            "path" => "",
+            "headerType" => "none",
+            "quicSecurity" => "none",
+            "serviceName" => "",
+            "mode" => "gun",
+            "security" => $server['tls'] !=0 ? ($server['tls'] == 2 ? "reality":"tls") : "",
+            "flow" => $server['flow'],
+            "fp" => isset($server['tls_settings']['fingerprint']) ? $server['tls_settings']['fingerprint'] : 'chrome',
+            "sni" => "",
+            "pbk" => "",
+            "sid" =>"",
+        ];
+
+        $output = "vless://" . $uuid . "@" . $config['add'] . ":" . $config['port'];
+        $output .= "?" . "type={$config['type']}" . "&encryption={$config['encryption']}" . "&security={$config['security']}";
+
+        if ($server['tls']) {
+            if ($config['flow'] != "") $output .= "&flow={$config['flow']}";
+            if ($server['tls_settings']) {
+                $tlsSettings = $server['tls_settings'];
+                if (isset($tlsSettings['server_name']) && !empty($tlsSettings['server_name'])) $config['sni'] = $tlsSettings['server_name'];
+                $output .= "&sni={$config['sni']}";
+                if ($server['tls'] == 2) {
+                    $config['pbk'] = $tlsSettings['public_key'];
+                    $config['sid'] = $tlsSettings['short_id'];
+                    $output .= "&pbk={$config['pbk']}" . "&sid={$config['sid']}";
+                }
+            }
+        }
+        if ((string)$server['network'] === 'tcp') {
+            $tcpSettings = $server['network_settings'];
+            if (isset($tcpSettings['header']['type']) && $tcpSettings['header']['type'] == 'http') {
+                $config['headerType'] = $tcpSettings['header']['type'];
+                if (isset($tcpSettings['header']['request']['headers']['Host'][0])) $config['host'] = $tcpSettings['header']['request']['headers']['Host'][0];
+                if (isset($tcpSettings['header']['request']['path'][0])) $config['path'] = $tcpSettings['header']['request']['path'][0];
+            }
+            $output .= "&headerType={$config['headerType']}" . "&host={$config['host']}" . "&path={$config['path']}";
+        }
+        if ((string)$server['network'] === 'kcp') {
+            $kcpSettings = $server['network_settings'];
+            if (isset($kcpSettings['header']['type'])) $config['headerType'] = $kcpSettings['header']['type'];
+            if (isset($kcpSettings['seed'])) $config['path'] = $kcpSettings['seed'];
+            $output .= "&headerType={$config['headerType']}" . "&seed={$config['path']}";
+        }
+        if ((string)$server['network'] === 'ws') {
+            $wsSettings = $server['network_settings'];
+            if (isset($wsSettings['path'])) $config['path'] = $wsSettings['path'];
+            if (isset($wsSettings['headers']['Host'])) $config['host'] = $wsSettings['headers']['Host'];
+            $output .= "&path={$config['path']}" . "&host={$config['host']}";
+        }
+        if ((string)$server['network'] === 'h2') {
+            $h2Settings = $server['network_settings'];
+            if (isset($h2Settings['path'])) $config['path'] = $h2Settings['path'];
+            if (isset($h2Settings['host'])) $config['host'] = $h2Settings['host'];
+            $output .= "&path={$config['path']}" . "&host={$config['host']}";
+        }
+        if ((string)$server['network'] === 'quic') {
+            $quicSettings = $server['network_settings'];
+            if (isset($quicSettings['security'])) $config['quicSecurity'] = $quicSettings['security'];
+            if (isset($quicSettings['header']['type'])) $config['headerType'] = $quicSettings['header']['type'];
+
+            $output .= "&quicSecurity={$config['quicSecurity']}" . "&headerType={$config['headerType']}";
+
+            if ((string)$quicSettings['security'] !== 'none' && isset($quicSettings['key'])) $config['path'] = $quicSettings['key'];
+
+            $output .= "&key={$config['path']}";
+        }
+        if ((string)$server['network'] === 'grpc') {
+            $grpcSettings = $server['network_settings'];
+            if (isset($grpcSettings['serviceName'])) $config['serviceName'] = $grpcSettings['serviceName'];
+            if (isset($grpcSettings['multiMode'])) $config['mode'] = $grpcSettings['multiMode'] ? "multi" : "gun";
+            $output .= "&serviceName={$config['serviceName']}" . "&mode={$config['mode']}";
+        }
+
+        $output .= "&fp={$config['fp']}" . "#" . $config['name'];
+
+        return $output . "\r\n";
     }
 
     public static function buildVmess($uuid, $server)
