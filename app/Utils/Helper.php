@@ -307,7 +307,7 @@ class Helper
                     $config['path'] = $server['network_settings']['path'];
                 }
                 if(isset($server['network_settings']['headers']['Host'])) {
-                    $config['host'] = Helper::encodeURIComponent($server['network_settings']['headers']['Host']);
+                    $config['host'] = $server['network_settings']['headers']['Host'];
                 }
             }
         }
@@ -369,20 +369,20 @@ class Helper
         $header = $settings['header'] ?? [];
         if (isset($header['type']) && $header['type'] === 'http') {
             $config['headerType'] = 'http';
-            $config['host'] = self::encodeURIComponent($header['request']['headers']['Host'][0] ?? '');
-            $config['path'] = self::encodeURIComponent($header['request']['path'][0] ?? '');
+            $config['host'] = $header['request']['headers']['Host'][0] ?? '';
+            $config['path'] = $header['request']['path'][0] ?? '';
         }
     }
 
     public static function configureWsSettings($settings, &$config)
     {
-        $config['path'] = self::encodeURIComponent($settings['path'] ?? '');
-        $config['host'] = self::encodeURIComponent($settings['headers']['Host'] ?? '');
+        $config['path'] = $settings['path'] ?? '';
+        $config['host'] = $settings['headers']['Host'] ?? '';
     }
 
     public static function configureGrpcSettings($settings, &$config)
     {
-        $config['serviceName'] = self::encodeURIComponent($settings['serviceName'] ?? '');
+        $config['serviceName'] = $settings['serviceName'] ?? '';
     }
 
     public static function configureQuicSettings($settings, &$config)
@@ -390,7 +390,7 @@ class Helper
         $config['quicSecurity'] = $settings['security'] ?? 'none';
         if ($config['quicSecurity'] !='none') {
             if (isset($settings['key'])){
-                $config['key'] = self::encodeURIComponent($settings['key']);
+                $config['key'] = $settings['key'];
             }
         }
         $config['headerType'] = $settings['header']['type'] ?? 'none';
@@ -400,19 +400,19 @@ class Helper
     {
         $config['headerType'] = $settings['header']['type'] ?? 'none';
         if (isset($settings['seed'])) {
-            $config['seed'] = self::encodeURIComponent($settings['seed']);
+            $config['seed'] = $settings['seed'];
         }
     }
 
     public static function configureHttpupgradeSettings($settings, &$config)
     {
-        $config['path'] = self::encodeURIComponent($settings['path'] ?? '');
-        $config['host'] = self::encodeURIComponent($settings['headers']['Host'] ?? '');
+        $config['path'] = $settings['path'] ?? '';
+        $config['host'] = $settings['headers']['Host'] ?? '';
     }
 
     public static function configureSplithttpSettings($settings, &$config)
     {
-        $config['path'] = self::encodeURIComponent($settings['path'] ?? '');
-        $config['host'] = self::encodeURIComponent($settings['headers']['Host'] ?? '');
+        $config['path'] = $settings['path'] ?? '';
+        $config['host'] = $settings['headers']['Host'] ?? '';
     }
 }
