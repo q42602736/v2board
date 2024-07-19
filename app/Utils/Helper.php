@@ -176,7 +176,8 @@ class Helper
         }
         $name = rawurlencode($server['name']);
         $str = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode("{$cipher}:{$password}"));
-        return "ss://{$str}@{$server['host']}:{$server['port']}#{$name}\r\n";
+        $add = self::formatHost($server['host']);
+        return "ss://{$str}@{$add}:{$server['port']}#{$name}\r\n";
     }
 
     public static function buildVmessUri($uuid, $server)
@@ -355,12 +356,16 @@ class Helper
                 break;
             case 'quic':
                 self::configureQuicSettings($settings, $config);
+                break;
             case 'kcp':
                 self::configureKcpSettings($settings, $config);
+                break;
             case 'httpupgrade':
                 self::configureHttpupgradeSettings($settings, $config);
+                break;
             case 'splithttp':
                 self::configureSplithttpSettings($settings, $config);
+                break;
         }
     }
 
@@ -407,12 +412,12 @@ class Helper
     public static function configureHttpupgradeSettings($settings, &$config)
     {
         $config['path'] = $settings['path'] ?? '';
-        $config['host'] = $settings['headers']['Host'] ?? '';
+        $config['host'] = $settings['headers']['host'] ?? '';
     }
 
     public static function configureSplithttpSettings($settings, &$config)
     {
         $config['path'] = $settings['path'] ?? '';
-        $config['host'] = $settings['headers']['Host'] ?? '';
+        $config['host'] = $settings['headers']['host'] ?? '';
     }
 }
