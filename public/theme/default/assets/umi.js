@@ -35370,6 +35370,7 @@
                 this.props.dispatch({
                     type: "passport/sendEmailVerify",
                     email: this.getEmail(),
+                    isregister: 1,
                     recaptchaData: e,
                     callback: ()=>{
                         n()
@@ -49975,6 +49976,7 @@
                     type: "passport/sendEmailVerify",
                     email: this.refs.email.value,
                     recaptchaData: e,
+                    isregister: 0,
                     callback: ()=>{
                         n()
                     }
@@ -57290,6 +57292,7 @@
                                     return l = {},
                                     l["email"] = r,
                                     a && (l["recaptcha_data"] = a),
+                                    l["isregister"] = e.isregister,
                                     n.next = 9,
                                     Object(i["b"])("/passport/comm/sendEmailVerify", l);
                                 case 9:
