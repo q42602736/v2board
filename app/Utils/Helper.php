@@ -412,12 +412,12 @@ class Helper
     public static function configureHttpupgradeSettings($settings, &$config)
     {
         $config['path'] = $settings['path'] ?? '';
-        $config['host'] = $settings['headers']['host'] ?? '';
+        $config['host'] = $settings['host'] ?? '';
     }
 
     public static function configureSplithttpSettings($settings, &$config)
     {
         $config['path'] = $settings['path'] ?? '';
-        $config['host'] = $settings['headers']['host'] ?? '';
+        $config['host'] = $settings['host'] ?? '';
     }
 }
