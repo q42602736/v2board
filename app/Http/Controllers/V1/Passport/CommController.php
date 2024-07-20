@@ -16,6 +16,8 @@ use Illuminate\Support\Facades\Mail;
 use ReCaptcha\ReCaptcha;
 use Illuminate\Support\Facades\RateLimiter;
 
+use function PHPUnit\Framework\isEmpty;
+
 class CommController extends Controller
 {
     private function isEmailVerify()
@@ -41,13 +43,15 @@ class CommController extends Controller
             }
         }
         $email = $request->input('email');
-        $isregister = $request->input('isregister');
+        $isforget = $request->input('isforget');
         $email_exists = User::where('email', $email)->exists();
-        if ($isregister == 1 && $email_exists) {
-            abort(500, __('This email is registered'));
-        } 
-        if ($isregister == 0 && !$email_exists) {
-            abort(500, __('This email is not registered in the system'));
+        if (isset($isforget)) {
+            if ($isforget == 0 && $email_exists) {
+                abort(500, __('This email is registered'));
+            } 
+            if ($isforget == 1 && !$email_exists) {
+                abort(500, __('This email is not registered in the system'));
+            }
         }
         if (Cache::get(CacheKey::get('LAST_SEND_EMAIL_VERIFY_TIMESTAMP', $email))) {
             abort(500, __('Email verification code has been sent, please request again later'));
