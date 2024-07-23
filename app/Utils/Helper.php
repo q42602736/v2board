@@ -243,12 +243,12 @@ class Helper
 
             case 'httpupgrade':
                 $config['path'] = $networkSettings['path'] ?? null;
-                $config['host'] = $networkSettings['headers']['Host'] ?? null;
+                $config['host'] = $networkSettings['host'] ?? null;
                 break;
             
             case 'splithttp':
                 $config['path'] = $networkSettings['path'] ?? null;
-                $config['host'] = $networkSettings['headers']['Host'] ?? null;
+                $config['host'] = $networkSettings['host'] ?? null;
                 break;
         }
 
