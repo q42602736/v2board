@@ -20982,6 +20982,13 @@
                             className: "nav-main-link-icon si si-present"
                         })
                     }, {
+                        title: "\u793c\u54c1\u5361\u7ba1\u7406",
+                        type: "item",
+                        href: "/giftcard",
+                        icon: o.a.createElement("i", {
+                            className: "nav-main-link-icon si si-star"
+                        })
+                    }, {
                         title: "\u7528\u6237",
                         type: "heading"
                     }, {
@@ -80421,6 +80428,10 @@
             path: "/coupon",
             exact: !0,
             component: n("Q55k").default
+        },{
+            path: "/giftcard",
+            exact: !0,
+            component: n("showgiftcardpage").default
         }, {
             path: "/dashboard",
             exact: !0,
@@ -108428,6 +108439,9 @@
                 namespace: "coupon"
             }, n("eOCx").default)),
             u.model(i()({
+                namespace: "giftcard"
+            }, n("callgiftcardpage").default)),
+            u.model(i()({
                 namespace: "knowledge"
             }, n("mHNb").default)),
             u.model(i()({
@@ -110896,5 +110910,1000 @@
             }
         }),
         n("gRqi")(v)
+    },
+    showgiftcardpage: function(e, t, n) {
+        "use strict";
+        n.r(t);
+        var r = n("jehZ")
+          , i = n.n(r)
+          , o = (n("iQDF"),
+        n("+eQT"))
+          , a = (n("OaEy"),
+        n("2fM7"))
+          , s = (n("5NDa"),
+        n("5rEg"))
+          , l = (n("g9YV"),
+        n("wCAj"))
+          , c = (n("+L6B"),
+        n("2/Rp"))
+          , u = (n("Pwec"),
+        n("CtXQ"))
+          , h = (n("2qtc"),
+        n("kLXV"))
+          , f = (n("/zsF"),
+        n("PArb"))
+          , d = (n("+BJd"),
+        n("mr32"))
+          , p = (n("miYZ"),
+        n("tsqr"))
+          , m = (n("BoS7"),
+        n("Sdc0"))
+          , g = n("p0pE")
+          , v = n.n(g)
+          , y = n("q1tI")
+          , b = n.n(y)
+          , w = n("Bl7J")
+          , x = n("wd/R")
+          , _ = n.n(x)
+          , E = n("+QRC")
+          , S = n.n(E)
+          , k = n("/MKj")
+          , C = n("tI4l")
+          , O = n("v32e");
+        class T extends b.a.Component {
+            constructor(e) {
+                super(e),
+                this.defaultValue = {
+                    type: 1
+                },
+                this.state = {
+                    visible: !1,
+                    submit: v()({}, this.defaultValue)
+                }
+            }
+            componentDidMount() {
+                this.props.dispatch({
+                    type: "giftcard/fetch"
+                })
+            }
+            modalVisible() {
+                this.setState({
+                    visible: !this.state.visible
+                }, ()=>{
+                    this.state.visible || this.setState({
+                        submit: this.defaultValue
+                    })
+                }
+                )
+            }
+            generate() {
+                var e = v()({}, this.state.submit);
+                this.props.dispatch({
+                    type: "giftcard/generate",
+                    params: e,
+                    callback: ()=>{
+                        this.modalVisible()
+                    }
+                })
+            }
+            drop(e) {
+                this.props.dispatch({
+                    type: "giftcard/drop",
+                    id: e.id
+                })
+            }
+            tableOnChange(e, t) {
+                this.props.dispatch({
+                    type: "giftcard/changeTable",
+                    pagination: e,
+                    sort: {
+                        sort_type: "ascend" === t.order ? "ASC" : "DESC",
+                        sort: t.columnKey
+                    }
+                })
+            }
+            render() {
+                var e = this.props.giftcard
+                  , t = e.giftcards
+                  , n = e.fetchLoading
+                  , r = e.saveLoading
+                  , g = e.pagination
+                  , x = [{
+                    title: "#",
+                    dataIndex: "id",
+                    key: "id"
+                }, {
+                    title: "\u540d\u79f0",
+                    dataIndex: "name",
+                    key: "name"
+                }, {
+                    title: "\u7c7b\u578b",
+                    dataIndex: "type",
+                    key: "type",
+                    render: e=>{
+                        return 1 === e ? "\u91d1\u989d" : (2 === e ? "\u65f6\u957f" : "\u6d41\u91cf")
+                    }
+                }, {
+                    title: "\u6570\u503c",
+                    dataIndex: "value",
+                    key: "value",
+                    render: (e,t)=>{
+                        return 1 === t.type ? e.toFixed(2) + " \xa5" : (2 === t.type ? e + " \u5929" : e + " GB")
+                    }
+                }, {
+                    title: "\u5361\u5bc6",
+                    dataIndex: "code",
+                    key: "code",
+                    render: e=>{
+                        return b.a.createElement(d["a"], {
+                            style: {
+                                cursor: "pointer"
+                            },
+                            onClick: ()=>{
+                                S()(e),
+                                p["a"].success("\u590d\u5236\u6210\u529f")
+                            }
+                        }, e)
+                    }
+                }, {
+                    title: "\u5269\u4f59\u6b21\u6570",
+                    dataIndex: "limit_use",
+                    key: "limit_use",
+                    render: e=>{
+                        return b.a.createElement(d["a"], null, null !== e ? e : "\u65e0\u9650")
+                    }
+                }, {
+                    title: "\u6709\u6548\u671f",
+                    dataIndex: "started_at",
+                    key: "started_at",
+                    align: "left",
+                    render: (e,t)=>{
+                        return "".concat(_()(1e3 * t.started_at).format("YYYY/MM/DD HH:mm"), " ~ ").concat(_()(1e3 * t.ended_at).format("YYYY/MM/DD HH:mm"))
+                    }
+                }, {
+                    title: "\u64cd\u4f5c",
+                    dataIndex: "action",
+                    key: "action",
+                    align: "right",
+                    fixed: "right",
+                    render: (e,n,r)=>{
+                        return b.a.createElement("div", null, b.a.createElement("a", {
+                            onClick: ()=>{
+                                this.setState({
+                                    submit: t[r]
+                                }, ()=>{
+                                    this.modalVisible()
+                                }
+                                )
+                            }
+                            ,
+                            href: "javascript:void(0);"
+                        }, "\u7f16\u8f91"), b.a.createElement(f["a"], {
+                            type: "vertical"
+                        }), b.a.createElement("a", {
+                            onClick: ()=>{
+                                h["a"].confirm({
+                                    title: "\u8b66\u544a",
+                                    content: "\u786e\u5b9a\u8981\u5220\u9664\u8be5\u6761\u9879\u76ee\u5417\uff1f",
+                                    onOk: ()=>this.drop(n),
+                                    okText: "\u786e\u5b9a",
+                                    cancelText: "\u53d6\u6d88"
+                                })
+                            }
+                            ,
+                            href: "javascript:void(0);"
+                        }, "\u5220\u9664"))
+                    }
+                }];
+                return b.a.createElement(w["a"], i()({}, this.props, {
+                    title: "\u793c\u54c1\u5361\u7ba1\u7406"
+                }), b.a.createElement(O["a"], {
+                    loading: n
+                }, b.a.createElement("div", {
+                    className: "block border-bottom"
+                }, b.a.createElement("div", {
+                    className: "bg-white"
+                }, b.a.createElement("div", {
+                    style: {
+                        padding: 15
+                    }
+                }, b.a.createElement(c["a"], {
+                    onClick: ()=>this.modalVisible()
+                }, b.a.createElement(u["a"], {
+                    type: "plus"
+                }), "\u6dfb\u52a0\u793c\u54c1\u5361")), b.a.createElement(l["a"], {
+                    tableLayout: "auto",
+                    dataSource: t,
+                    columns: x,
+                    scroll: {
+                        x: 1050
+                    },
+                    pagination: v()({}, g, {
+                        size: "small",
+                        showSizeChanger: !0,
+                        pageSizeOptions: [10, 50, 100, 150]
+                    }),
+                    onChange: (e,t,n)=>this.tableOnChange(e, n)
+                })))), b.a.createElement(h["a"], {
+                    title: "".concat(this.state.submit.id ? "\u7f16\u8f91\u793c\u54c1\u5361" : "\u65b0\u5efa\u793c\u54c1\u5361"),
+                    visible: this.state.visible,
+                    onCancel: ()=>this.modalVisible(),
+                    onOk: ()=>this.generate(),
+                    okText: "\u63d0\u4ea4",
+                    cancelText: "\u53d6\u6d88",
+                    okButtonProps: {
+                        loading: r
+                    },
+                    key: this.key
+                }, b.a.createElement("div", null, b.a.createElement("div", {
+                    className: "form-group"
+                }, b.a.createElement("label", {
+                    for: "example-text-input-alt"
+                }, "\u540d\u79f0"), b.a.createElement(s["a"], {
+                    placeholder: "\u8bf7\u8f93\u5165\u793c\u54c1\u5361\u540d\u79f0",
+                    value: this.state.submit.name,
+                    onChange: e=>{
+                        this.setState({
+                            submit: v()({}, this.state.submit, {
+                                name: e.target.value
+                            })
+                        })
+                    }
+                })), !this.state.submit.generate_count && b.a.createElement("div", {
+                    className: "form-group"
+                }, b.a.createElement("label", {
+                    for: "example-text-input-alt"
+                }, "\u81ea\u5b9a\u4e49\u793c\u54c1\u5361\u5361\u5bc6"), b.a.createElement(s["a"], {
+                    placeholder: "\u81ea\u5b9a\u4e49\u793c\u54c1\u5361\u5361\u5bc6(\u7559\u7a7a\u968f\u673a\u751f\u6210)",
+                    value: this.state.submit.code,
+                    onChange: e=>{
+                        this.setState({
+                            submit: v()({}, this.state.submit, {
+                                code: e.target.value,
+                                generate_count: void 0
+                            })
+                        })
+                    }
+                })), b.a.createElement("div", {
+                    className: "form-group"
+                }, b.a.createElement("label", {
+                    for: "example-text-input-alt"
+                }, "\u793c\u54c1\u5361\u7c7b\u578b"), b.a.createElement(s["a"], {
+                    type: "number",
+                    addonBefore: b.a.createElement(a["a"], {
+                        style: {
+                            width: 140
+                        },
+                        value: this.state.submit.type,
+                        onChange: e=>{
+                            this.setState({
+                                submit: v()({}, this.state.submit, {
+                                    type: e
+                                })
+                            })
+                        }
+                    }, b.a.createElement(a["a"].Option, {
+                        value: 1
+                    }, "\u589e\u52a0\u8d26\u6237\u4f59\u989d"), b.a.createElement(a["a"].Option, {
+                        value: 2
+                    }, "\u589e\u52a0\u8ba2\u9605\u65f6\u957f"), b.a.createElement(a["a"].Option, {
+                        value: 3
+                    }, "\u589e\u52a0\u5957\u9910\u6d41\u91cf")),
+                    addonAfter: 1 === this.state.submit.type ? "\xa5" : 2 === this.state.submit.type ? "\u5929" : "GB",
+                    placeholder: "\u8bf7\u8f93\u5165\u503c",
+                    value: this.state.submit.value,
+                    onChange: e=>{
+                        this.setState({
+                            submit: v()({}, this.state.submit, {
+                                value: e.target.value
+                            })
+                        })
+                    }
+                })), b.a.createElement("div", {
+                    className: "form-group"
+                }, b.a.createElement("label", {
+                    for: "example-text-input-alt"
+                }, "\u793c\u54c1\u5361\u6709\u6548\u671f"), b.a.createElement(o["a"].RangePicker, {
+                    style: {
+                        width: "100%"
+                    },
+                    showTime: {
+                        format: "HH:mm"
+                    },
+                    format: "YYYY-MM-DD HH:mm",
+                    placeholder: ["Start Time", "End Time"],
+                    value: [this.state.submit.started_at ? _()(1e3 * this.state.submit.started_at) : null, this.state.submit.ended_at ? _()(1e3 * this.state.submit.ended_at) : null],
+                    onChange: e=>this.setState({
+                        submit: v()({}, this.state.submit, {
+                            started_at: e[0] ? e[0].format("X") : null,
+                            ended_at: e[1] ? e[1].format("X") : null
+                        })
+                    }),
+                    onOk: e=>this.setState({
+                        submit: v()({}, this.state.submit, {
+                            started_at: e[0] ? e[0].format("X") : null,
+                            ended_at: e[1] ? e[1].format("X") : null
+                        })
+                    })
+                })), b.a.createElement("div", {
+                    className: "form-group"
+                }, b.a.createElement("label", {
+                    for: "example-text-input-alt"
+                }, "\u6700\u5927\u4f7f\u7528\u6b21\u6570"), b.a.createElement(s["a"], {
+                    placeholder: "\u9650\u5236\u6700\u5927\u4f7f\u7528\u6b21\u6570\uff0c\u7528\u5b8c\u5219\u65e0\u6cd5\u4f7f\u7528(\u4e3a\u7a7a\u5219\u4e0d\u9650\u5236)",
+                    value: this.state.submit.limit_use,
+                    onChange: e=>{
+                        this.setState({
+                            submit: v()({}, this.state.submit, {
+                                limit_use: e.target.value
+                            })
+                        })
+                    }
+                })), !this.state.submit.code && !this.state.submit.id && b.a.createElement("div", {
+                    className: "form-group"
+                }, b.a.createElement("label", {
+                    htmlFor: "example-text-input-alt"
+                }, "\u751f\u6210\u6570\u91cf"), b.a.createElement(s["a"], {
+                    placeholder: "\u8f93\u5165\u6570\u91cf\u6279\u91cf\u751f\u6210",
+                    value: this.state.submit.generate_count,
+                    onChange: e=>{
+                        this.setState({
+                            submit: v()({}, this.state.submit, {
+                                generate_count: e.target.value,
+                                code: void 0
+                            })
+                        })
+                    }
+                })))))
+            }
+        }
+        t["default"] = Object(k["c"])(e=>{
+            var t = e.giftcard
+              , n = e.plan;
+            return {
+                giftcard: t,
+                plan: n
+            }
+        }
+        )(T)
+    },
+    callgiftcardpage: function(e, t, n) {
+        "use strict";
+        n.r(t);
+        var r = n("p0pE")
+          , i = n.n(r)
+          , o = n("t3Un")
+          , a = n("wd/R")
+          , s = n.n(a);
+        function l() {
+            l = function() {
+                return e
+            }
+            ;
+            var e = {}
+              , t = Object.prototype
+              , n = t.hasOwnProperty
+              , r = Object.defineProperty || function(e, t, n) {
+                e[t] = n.value
+            }
+              , i = "function" == typeof Symbol ? Symbol : {}
+              , o = i.iterator || "@@iterator"
+              , a = i.asyncIterator || "@@asyncIterator"
+              , s = i.toStringTag || "@@toStringTag";
+            function c(e, t, n) {
+                return Object.defineProperty(e, t, {
+                    value: n,
+                    enumerable: !0,
+                    configurable: !0,
+                    writable: !0
+                }),
+                e[t]
+            }
+            try {
+                c({}, "")
+            } catch (e) {
+                c = function(e, t, n) {
+                    return e[t] = n
+                }
+            }
+            function u(e, t, n, i) {
+                var o = t && t.prototype instanceof d ? t : d
+                  , a = Object.create(o.prototype)
+                  , s = new C(i || []);
+                return r(a, "_invoke", {
+                    value: _(e, n, s)
+                }),
+                a
+            }
+            function h(e, t, n) {
+                try {
+                    return {
+                        type: "normal",
+                        arg: e.call(t, n)
+                    }
+                } catch (e) {
+                    return {
+                        type: "throw",
+                        arg: e
+                    }
+                }
+            }
+            e.wrap = u;
+            var f = {};
+            function d() {}
+            function p() {}
+            function m() {}
+            var g = {};
+            c(g, o, function() {
+                return this
+            });
+            var v = Object.getPrototypeOf
+              , y = v && v(v(O([])));
+            y && y !== t && n.call(y, o) && (g = y);
+            var b = m.prototype = d.prototype = Object.create(g);
+            function w(e) {
+                ["next", "throw", "return"].forEach(function(t) {
+                    c(e, t, function(e) {
+                        return this._invoke(t, e)
+                    })
+                })
+            }
+            function x(e, t) {
+                function i(r, o, a, s) {
+                    var l = h(e[r], e, o);
+                    if ("throw" !== l.type) {
+                        var c = l.arg
+                          , u = c.value;
+                        return u && "object" == typeof u && n.call(u, "__await") ? t.resolve(u.__await).then(function(e) {
+                            i("next", e, a, s)
+                        }, function(e) {
+                            i("throw", e, a, s)
+                        }) : t.resolve(u).then(function(e) {
+                            c.value = e,
+                            a(c)
+                        }, function(e) {
+                            return i("throw", e, a, s)
+                        })
+                    }
+                    s(l.arg)
+                }
+                var o;
+                r(this, "_invoke", {
+                    value: function(e, n) {
+                        function r() {
+                            return new t(function(t, r) {
+                                i(e, n, t, r)
+                            }
+                            )
+                        }
+                        return o = o ? o.then(r, r) : r()
+                    }
+                })
+            }
+            function _(e, t, n) {
+                var r = "suspendedStart";
+                return function(i, o) {
+                    if ("executing" === r)
+                        throw new Error("Generator is already running");
+                    if ("completed" === r) {
+                        if ("throw" === i)
+                            throw o;
+                        return T()
+                    }
+                    for (n.method = i,
+                    n.arg = o; ; ) {
+                        var a = n.delegate;
+                        if (a) {
+                            var s = E(a, n);
+                            if (s) {
+                                if (s === f)
+                                    continue;
+                                return s
+                            }
+                        }
+                        if ("next" === n.method)
+                            n.sent = n._sent = n.arg;
+                        else if ("throw" === n.method) {
+                            if ("suspendedStart" === r)
+                                throw r = "completed",
+                                n.arg;
+                            n.dispatchException(n.arg)
+                        } else
+                            "return" === n.method && n.abrupt("return", n.arg);
+                        r = "executing";
+                        var l = h(e, t, n);
+                        if ("normal" === l.type) {
+                            if (r = n.done ? "completed" : "suspendedYield",
+                            l.arg === f)
+                                continue;
+                            return {
+                                value: l.arg,
+                                done: n.done
+                            }
+                        }
+                        "throw" === l.type && (r = "completed",
+                        n.method = "throw",
+                        n.arg = l.arg)
+                    }
+                }
+            }
+            function E(e, t) {
+                var n = t.method
+                  , r = e.iterator[n];
+                if (void 0 === r)
+                    return t.delegate = null,
+                    "throw" === n && e.iterator.return && (t.method = "return",
+                    t.arg = void 0,
+                    E(e, t),
+                    "throw" === t.method) || "return" !== n && (t.method = "throw",
+                    t.arg = new TypeError("The iterator does not provide a '" + n + "' method")),
+                    f;
+                var i = h(r, e.iterator, t.arg);
+                if ("throw" === i.type)
+                    return t.method = "throw",
+                    t.arg = i.arg,
+                    t.delegate = null,
+                    f;
+                var o = i.arg;
+                return o ? o.done ? (t[e.resultName] = o.value,
+                t.next = e.nextLoc,
+                "return" !== t.method && (t.method = "next",
+                t.arg = void 0),
+                t.delegate = null,
+                f) : o : (t.method = "throw",
+                t.arg = new TypeError("iterator result is not an object"),
+                t.delegate = null,
+                f)
+            }
+            function S(e) {
+                var t = {
+                    tryLoc: e[0]
+                };
+                1 in e && (t.catchLoc = e[1]),
+                2 in e && (t.finallyLoc = e[2],
+                t.afterLoc = e[3]),
+                this.tryEntries.push(t)
+            }
+            function k(e) {
+                var t = e.completion || {};
+                t.type = "normal",
+                delete t.arg,
+                e.completion = t
+            }
+            function C(e) {
+                this.tryEntries = [{
+                    tryLoc: "root"
+                }],
+                e.forEach(S, this),
+                this.reset(!0)
+            }
+            function O(e) {
+                if (e) {
+                    var t = e[o];
+                    if (t)
+                        return t.call(e);
+                    if ("function" == typeof e.next)
+                        return e;
+                    if (!isNaN(e.length)) {
+                        var r = -1
+                          , i = function t() {
+                            for (; ++r < e.length; )
+                                if (n.call(e, r))
+                                    return t.value = e[r],
+                                    t.done = !1,
+                                    t;
+                            return t.value = void 0,
+                            t.done = !0,
+                            t
+                        };
+                        return i.next = i
+                    }
+                }
+                return {
+                    next: T
+                }
+            }
+            function T() {
+                return {
+                    value: void 0,
+                    done: !0
+                }
+            }
+            return p.prototype = m,
+            r(b, "constructor", {
+                value: m,
+                configurable: !0
+            }),
+            r(m, "constructor", {
+                value: p,
+                configurable: !0
+            }),
+            p.displayName = c(m, s, "GeneratorFunction"),
+            e.isGeneratorFunction = function(e) {
+                var t = "function" == typeof e && e.constructor;
+                return !!t && (t === p || "GeneratorFunction" === (t.displayName || t.name))
+            }
+            ,
+            e.mark = function(e) {
+                return Object.setPrototypeOf ? Object.setPrototypeOf(e, m) : (e.__proto__ = m,
+                c(e, s, "GeneratorFunction")),
+                e.prototype = Object.create(b),
+                e
+            }
+            ,
+            e.awrap = function(e) {
+                return {
+                    __await: e
+                }
+            }
+            ,
+            w(x.prototype),
+            c(x.prototype, a, function() {
+                return this
+            }),
+            e.AsyncIterator = x,
+            e.async = function(t, n, r, i, o) {
+                void 0 === o && (o = Promise);
+                var a = new x(u(t, n, r, i),o);
+                return e.isGeneratorFunction(n) ? a : a.next().then(function(e) {
+                    return e.done ? e.value : a.next()
+                })
+            }
+            ,
+            w(b),
+            c(b, s, "Generator"),
+            c(b, o, function() {
+                return this
+            }),
+            c(b, "toString", function() {
+                return "[object Generator]"
+            }),
+            e.keys = function(e) {
+                var t = Object(e)
+                  , n = [];
+                for (var r in t)
+                    n.push(r);
+                return n.reverse(),
+                function e() {
+                    for (; n.length; ) {
+                        var r = n.pop();
+                        if (r in t)
+                            return e.value = r,
+                            e.done = !1,
+                            e
+                    }
+                    return e.done = !0,
+                    e
+                }
+            }
+            ,
+            e.values = O,
+            C.prototype = {
+                constructor: C,
+                reset: function(e) {
+                    if (this.prev = 0,
+                    this.next = 0,
+                    this.sent = this._sent = void 0,
+                    this.done = !1,
+                    this.delegate = null,
+                    this.method = "next",
+                    this.arg = void 0,
+                    this.tryEntries.forEach(k),
+                    !e)
+                        for (var t in this)
+                            "t" === t.charAt(0) && n.call(this, t) && !isNaN(+t.slice(1)) && (this[t] = void 0)
+                },
+                stop: function() {
+                    this.done = !0;
+                    var e = this.tryEntries[0].completion;
+                    if ("throw" === e.type)
+                        throw e.arg;
+                    return this.rval
+                },
+                dispatchException: function(e) {
+                    if (this.done)
+                        throw e;
+                    var t = this;
+                    function r(n, r) {
+                        return a.type = "throw",
+                        a.arg = e,
+                        t.next = n,
+                        r && (t.method = "next",
+                        t.arg = void 0),
+                        !!r
+                    }
+                    for (var i = this.tryEntries.length - 1; i >= 0; --i) {
+                        var o = this.tryEntries[i]
+                          , a = o.completion;
+                        if ("root" === o.tryLoc)
+                            return r("end");
+                        if (o.tryLoc <= this.prev) {
+                            var s = n.call(o, "catchLoc")
+                              , l = n.call(o, "finallyLoc");
+                            if (s && l) {
+                                if (this.prev < o.catchLoc)
+                                    return r(o.catchLoc, !0);
+                                if (this.prev < o.finallyLoc)
+                                    return r(o.finallyLoc)
+                            } else if (s) {
+                                if (this.prev < o.catchLoc)
+                                    return r(o.catchLoc, !0)
+                            } else {
+                                if (!l)
+                                    throw new Error("try statement without catch or finally");
+                                if (this.prev < o.finallyLoc)
+                                    return r(o.finallyLoc)
+                            }
+                        }
+                    }
+                },
+                abrupt: function(e, t) {
+                    for (var r = this.tryEntries.length - 1; r >= 0; --r) {
+                        var i = this.tryEntries[r];
+                        if (i.tryLoc <= this.prev && n.call(i, "finallyLoc") && this.prev < i.finallyLoc) {
+                            var o = i;
+                            break
+                        }
+                    }
+                    o && ("break" === e || "continue" === e) && o.tryLoc <= t && t <= o.finallyLoc && (o = null);
+                    var a = o ? o.completion : {};
+                    return a.type = e,
+                    a.arg = t,
+                    o ? (this.method = "next",
+                    this.next = o.finallyLoc,
+                    f) : this.complete(a)
+                },
+                complete: function(e, t) {
+                    if ("throw" === e.type)
+                        throw e.arg;
+                    return "break" === e.type || "continue" === e.type ? this.next = e.arg : "return" === e.type ? (this.rval = this.arg = e.arg,
+                    this.method = "return",
+                    this.next = "end") : "normal" === e.type && t && (this.next = t),
+                    f
+                },
+                finish: function(e) {
+                    for (var t = this.tryEntries.length - 1; t >= 0; --t) {
+                        var n = this.tryEntries[t];
+                        if (n.finallyLoc === e)
+                            return this.complete(n.completion, n.afterLoc),
+                            k(n),
+                            f
+                    }
+                },
+                catch: function(e) {
+                    for (var t = this.tryEntries.length - 1; t >= 0; --t) {
+                        var n = this.tryEntries[t];
+                        if (n.tryLoc === e) {
+                            var r = n.completion;
+                            if ("throw" === r.type) {
+                                var i = r.arg;
+                                k(n)
+                            }
+                            return i
+                        }
+                    }
+                    throw new Error("illegal catch attempt")
+                },
+                delegateYield: function(e, t, n) {
+                    return this.delegate = {
+                        iterator: O(e),
+                        resultName: t,
+                        nextLoc: n
+                    },
+                    "next" === this.method && (this.arg = void 0),
+                    f
+                }
+            },
+            e
+        }
+        var c = {
+            giftcards: [],
+            fetchLoading: !1,
+            saveLoading: !1,
+            pagination: {
+                pageSize: 10,
+                current: 1
+            },
+            sort: {}
+        };
+        t["default"] = {
+            name: "giftcard",
+            state: i()({}, c),
+            reducers: {
+                setState(e, t) {
+                    var n = t.payload;
+                    return i()({}, e, n)
+                }
+            },
+            effects: {
+                fetch(e, t) {
+                    var n = t.put
+                      , r = t.select;
+                    return l().mark(function e() {
+                        var t, a;
+                        return l().wrap(function(e) {
+                            while (1)
+                                switch (e.prev = e.next) {
+                                case 0:
+                                    return e.next = 2,
+                                    r(e=>e.giftcard);
+                                case 2:
+                                    return t = e.sent,
+                                    e.next = 5,
+                                    n({
+                                        type: "setState",
+                                        payload: {
+                                            fetchLoading: !0
+                                        }
+                                    });
+                                case 5:
+                                    return e.next = 7,
+                                    Object(o["a"])("/" + window.settings.secure_path + "/giftcard/fetch", i()({}, t.pagination, t.sort));
+                                case 7:
+                                    return a = e.sent,
+                                    e.next = 10,
+                                    n({
+                                        type: "setState",
+                                        payload: {
+                                            fetchLoading: !1
+                                        }
+                                    });
+                                case 10:
+                                    if (200 === a.code) {
+                                        e.next = 12;
+                                        break
+                                    }
+                                    return e.abrupt("return");
+                                case 12:
+                                    return a.data.forEach(e=>{
+                                        1 === e.type && (e.value = e.value / 100)
+                                    }
+                                    ),
+                                    e.next = 15,
+                                    n({
+                                        type: "setState",
+                                        payload: {
+                                            giftcards: a.data,
+                                            pagination: i()({}, t.pagination, {
+                                                total: a.total
+                                            })
+                                        }
+                                    });
+                                case 15:
+                                case "end":
+                                    return e.stop()
+                                }
+                        }, e)
+                    })()
+                },
+                generate(e, t) {
+                    var n = e.params
+                      , r = e.callback
+                      , i = t.put;
+                    return l().mark(function e() {
+                        var t, a, c, u;
+                        return l().wrap(function(e) {
+                            while (1)
+                                switch (e.prev = e.next) {
+                                case 0:
+                                    return e.next = 2,
+                                    i({
+                                        type: "setState",
+                                        payload: {
+                                            saveLoading: !0
+                                        }
+                                    });
+                                case 2:
+                                    return (1 === n.type) && (n.value = 100 * n.value),
+                                    e.next = 5,
+                                    Object(o["b"])("/" + window.settings.secure_path + "/giftcard/generate", n);
+                                case 5:
+                                    return t = e.sent,
+                                    e.next = 8,
+                                    i({
+                                        type: "setState",
+                                        payload: {
+                                            saveLoading: !1
+                                        }
+                                    });
+                                case 8:
+                                    if (200 === t.code) {
+                                        e.next = 10;
+                                        break
+                                    }
+                                    return e.abrupt("return");
+                                case 10:
+                                    return n.generate_count && (a = new Blob([t.buffer],{
+                                        type: "text/plain,charset=UTF-8"
+                                    }),
+                                    c = window.URL.createObjectURL(a),
+                                    u = document.createElement("a"),
+                                    u.href = c,
+                                    u.style.display = "none",
+                                    u.download = "GIFTCARD ".concat(s()().format("YYYY-MM-DD HH:mm:ss"), ".csv"),
+                                    u.click(),
+                                    window.URL.revokeObjectURL(c)),
+                                    e.next = 13,
+                                    i({
+                                        type: "fetch"
+                                    });
+                                case 13:
+                                    "function" === typeof r && r();
+                                case 14:
+                                case "end":
+                                    return e.stop()
+                                }
+                        }, e)
+                    })()
+                },
+                drop(e, t) {
+                    var n = e.id
+                      , r = t.put;
+                    return l().mark(function e() {
+                        var t;
+                        return l().wrap(function(e) {
+                            while (1)
+                                switch (e.prev = e.next) {
+                                case 0:
+                                    return e.next = 2,
+                                    Object(o["b"])("/" + window.settings.secure_path + "/giftcard/drop", {
+                                        id: n
+                                    });
+                                case 2:
+                                    if (t = e.sent,
+                                    200 === t.code) {
+                                        e.next = 5;
+                                        break
+                                    }
+                                    return e.abrupt("return");
+                                case 5:
+                                    return e.next = 7,
+                                    r({
+                                        type: "fetch"
+                                    });
+                                case 7:
+                                case "end":
+                                    return e.stop()
+                                }
+                        }, e)
+                    })()
+                },
+                changeTable(e, t) {
+                    var n = e.pagination
+                      , r = e.sort
+                      , o = t.select
+                      , a = t.put;
+                    return l().mark(function e() {
+                        var t;
+                        return l().wrap(function(e) {
+                            while (1)
+                                switch (e.prev = e.next) {
+                                case 0:
+                                    return e.next = 2,
+                                    o(e=>e.giftcard);
+                                case 2:
+                                    return t = e.sent,
+                                    e.next = 5,
+                                    a({
+                                        type: "setState",
+                                        payload: {
+                                            pagination: i()({}, t.pagination, n),
+                                            sort: r
+                                        }
+                                    });
+                                case 5:
+                                    return e.next = 7,
+                                    a({
+                                        type: "fetch"
+                                    });
+                                case 7:
+                                case "end":
+                                    return e.stop()
+                                }
+                        }, e)
+                    })()
+                }
+            }
+        }
     }
 });
