@@ -64,7 +64,7 @@ class GiftcardController extends Controller
     {
         $giftcards = [];
         $giftcard = $request->validated();
-        $giftcard['created_at'] = $giftcard['updated_at'] = now();
+        $giftcard['created_at'] = $giftcard['updated_at'] = time();
         unset($giftcard['generate_count']);
         
         for ($i = 0; $i < $request->input('generate_count'); $i++) {
@@ -87,7 +87,7 @@ class GiftcardController extends Controller
         $data = "名称,类型,数值,开始时间,结束时间,可用次数,礼品卡卡密,生成时间\r\n";
         foreach ($giftcards as $giftcard) {
             $type = ['', '金额', '时长', '流量'][$giftcard['type']];
-            $value = ['', $giftcard['deposit_value'], $giftcard['plan_duration'] . '天', $giftcard['traffic'] . 'GB'][$giftcard['type']];
+            $value = ['', round($giftcard['value']/100, 2), $giftcard['value'] . '天', $giftcard['value'] . 'GB'][$giftcard['type']];
             $startTime = date('Y-m-d H:i:s', strtotime($giftcard['started_at']));
             $endTime = date('Y-m-d H:i:s', strtotime($giftcard['ended_at']));
             $limitUse = $giftcard['limit_use'] ?? '不限制';
