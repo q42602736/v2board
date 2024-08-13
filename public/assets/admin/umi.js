@@ -111021,14 +111021,36 @@
                     dataIndex: "type",
                     key: "type",
                     render: e=>{
-                        return 1 === e ? "\u91d1\u989d" : (2 === e ? "\u65f6\u957f" : "\u6d41\u91cf")
+                        switch (e) {
+                            case 1:
+                                return "\u91d1\u989d";
+                            case 2:
+                                return "\u65f6\u957f";
+                            case 3:
+                                return "\u6d41\u91cf";
+                            case 4:
+                                return "\u91cd\u7f6e";
+                            default:
+                                return "";
+                        }
                     }
                 }, {
                     title: "\u6570\u503c",
                     dataIndex: "value",
                     key: "value",
                     render: (e,t)=>{
-                        return 1 === t.type ? e.toFixed(2) + " \xa5" : (2 === t.type ? e + " \u5929" : e + " GB")
+                        switch (t.type) {
+                            case 1:
+                                return e.toFixed(2) + " \xa5";
+                            case 2:
+                                return e + " \u5929";
+                            case 3:
+                                return e + " GB";
+                            case 4:
+                                return "-";
+                            default:
+                                return e;
+                        }
                     }
                 }, {
                     title: "\u5361\u5bc6",
@@ -111188,8 +111210,24 @@
                         value: 2
                     }, "\u589e\u52a0\u8ba2\u9605\u65f6\u957f"), b.a.createElement(a["a"].Option, {
                         value: 3
-                    }, "\u589e\u52a0\u5957\u9910\u6d41\u91cf")),
-                    addonAfter: 1 === this.state.submit.type ? "\xa5" : 2 === this.state.submit.type ? "\u5929" : "GB",
+                    }, "\u589e\u52a0\u5957\u9910\u6d41\u91cf"), b.a.createElement(a["a"].Option, {
+                        value: 4
+                    }, "\u91cd\u7f6e\u5957\u9910\u6d41\u91cf")),
+                    addonAfter: (() => {
+                        switch (this.state.submit.type) {
+                            case 1:
+                                return "\xa5";
+                            case 2:
+                                return "\u5929";
+                            case 3:
+                                return "GB";
+                            case 4:
+                                return "";
+                            default:
+                                return "";
+                        }
+                    })(),
+                    disabled: this.state.submit.type === 4,
                     placeholder: "\u8bf7\u8f93\u5165\u503c",
                     value: this.state.submit.value,
                     onChange: e=>{
