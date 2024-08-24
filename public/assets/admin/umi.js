@@ -111229,7 +111229,7 @@
                     })(),
                     disabled: this.state.submit.type === 4,
                     placeholder: "\u8bf7\u8f93\u5165\u503c",
-                    value: this.state.submit.value,
+                    value: this.state.submit.type === 4 ? 0 : this.state.submit.value,
                     onChange: e=>{
                         this.setState({
                             submit: v()({}, this.state.submit, {
