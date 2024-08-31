@@ -110965,6 +110965,10 @@
                 this.props.dispatch({
                     type: "giftcard/fetch"
                 })
+                ,
+                this.props.dispatch({
+                    type: "plan/fetch"
+                })
             }
             modalVisible() {
                 this.setState({
@@ -111008,6 +111012,7 @@
                   , n = e.fetchLoading
                   , r = e.saveLoading
                   , g = e.pagination
+                  , y = this.props.plan.plans
                   , x = [{
                     title: "#",
                     dataIndex: "id",
@@ -111030,6 +111035,8 @@
                                 return "\u6d41\u91cf";
                             case 4:
                                 return "\u91cd\u7f6e";
+                            case 5:
+                                return "\u5957\u9910";
                             default:
                                 return "";
                         }
@@ -111048,9 +111055,20 @@
                                 return e + " GB";
                             case 4:
                                 return "-";
+                            case 5:
+                                return e + " \u5929";
                             default:
                                 return e;
                         }
+                    }
+                }, {
+                    title: "\u5957\u9910",
+                    dataIndex: "plan_id",
+                    key: "plan_id",
+                    render: e=>{
+                        const foundplan = y.find((item) => item.id === e);
+                        const name = foundplan ? foundplan.name : "-";
+                        return name;
                     }
                 }, {
                     title: "\u5361\u5bc6",
@@ -111212,7 +111230,9 @@
                         value: 3
                     }, "\u589e\u52a0\u5957\u9910\u6d41\u91cf"), b.a.createElement(a["a"].Option, {
                         value: 4
-                    }, "\u91cd\u7f6e\u5957\u9910\u6d41\u91cf")),
+                    }, "\u91cd\u7f6e\u5957\u9910\u6d41\u91cf"), b.a.createElement(a["a"].Option, {
+                        value: 5
+                    }, "\u5151\u6362\u8ba2\u9605\u5957\u9910")),
                     addonAfter: (() => {
                         switch (this.state.submit.type) {
                             case 1:
@@ -111223,6 +111243,8 @@
                                 return "GB";
                             case 4:
                                 return "";
+                            case 5:
+                                return "\u5929";
                             default:
                                 return "";
                         }
@@ -111237,7 +111259,31 @@
                             })
                         })
                     }
-                })), b.a.createElement("div", {
+                })), (this.state.submit.type === 5) && b.a.createElement("div", {
+                    className: "form-group"
+                }, b.a.createElement("label", {
+                    for: "example-text-input-alt"
+                }, "\u6307\u5b9a\u8ba2\u9605"), b.a.createElement("div", null, b.a.createElement(a["a"], {
+                    value: this.state.submit.plan_id,
+                    onChange: e=>{
+                        this.setState({
+                            submit: v()({}, this.state.submit, {
+                                plan_id: e.length ? e : null
+                            })
+                        })
+                    },
+                    mode: "single",
+                    placeholder: "\u6307\u5b9a\u8ba2\u9605",
+                    style: {
+                        width: "100%"
+                    }
+                }, y.map(e=>{
+                    return b.a.createElement(a["a"].Option, {
+                        key: Math.random(),
+                        value: "".concat(e.id)
+                    }, e.name)
+                }
+                )))), b.a.createElement("div", {
                     className: "form-group"
                 }, b.a.createElement("label", {
                     for: "example-text-input-alt"
