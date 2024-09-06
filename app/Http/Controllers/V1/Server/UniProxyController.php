@@ -77,19 +77,19 @@ class UniProxyController extends Controller
     // 后端获取在线数据
     public function alivelist(Request $request)
     {
-        $userService = new UserService();
-        $maxId = $userService->getMaxId();
-        $alive = [];
-
-        for ($id = 1; $id <= $maxId; $id++) {
-            if (Cache::has('ALIVE_IP_USER_' . $id)) {
+        $maxId = Cache::remember('MAX_USER_ID', 60, function() {
+            return UserService::getMaxId();
+        });
+        $alive = Cache::remember('ALIVE_LIST', 60, function () use ($maxId) {
+            $alive = [];
+            for ($id = 1; $id <= $maxId; $id++) {
                 $ips_array = Cache::get('ALIVE_IP_USER_' . $id);
-                if ($ips_array) {
+                if ($ips_array && isset($ips_array['alive_ip'])) {
                     $alive[$id] = $ips_array['alive_ip'];
                 }
             }
-        }
-
+            return $alive;
+        });
         return response()->json(['alive' => (object)$alive]);
     }
 

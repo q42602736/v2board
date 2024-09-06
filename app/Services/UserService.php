@@ -175,7 +175,7 @@ class UserService
         StatServerJob::dispatch($data, $server, $protocol, 'd');
     }
 
-    public function getMaxId()
+    public static function getMaxId()
     {
         return User::max('id');
     }
