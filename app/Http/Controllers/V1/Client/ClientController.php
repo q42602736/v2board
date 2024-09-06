@@ -22,7 +22,7 @@ class ClientController extends Controller
         if ($userService->isAvailable($user)) {
             $serverService = new ServerService();
             $servers = $serverService->getAvailableServers($user);
-            if (!($flag && strpos($flag, 'sing-box'))) {
+            if (!strpos($flag, 'sing-box') || strpos($flag, 'hiddify')) {
                 $this->setSubscribeInfoToServers($servers, $user);
             }
             if ($flag) {
@@ -30,6 +30,9 @@ class ClientController extends Controller
                     $file = 'App\\Protocols\\' . basename($file, '.php');
                     $class = new $file($user, $servers);
                     if (strpos($flag, $class->flag) !== false) {
+                        if(($class->flag == 'sing-box') && strpos($flag, 'hiddify')) {
+                            continue;
+                        }
                         return $class->handle();
                     }
                 }
