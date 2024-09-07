@@ -53,36 +53,48 @@ class StatUserJob implements ShouldQueue
         if ($this->recordType === 'm') {
             //
         }
-        try {
-            DB::beginTransaction();
-            foreach(array_keys($this->data) as $userId){
-                $userdata = StatUser::where('record_at', $recordAt)
-                    ->where('server_rate', $this->server['rate'])
-                    ->where('user_id', $userId)
-                    ->lockForUpdate()->first();
-                if ($userdata) {
-                    $userdata->update([
-                        'u' => $userdata['u'] + $this->data[$userId][0],
-                        'd' => $userdata['d'] + $this->data[$userId][1]
-                    ]);
-                } else {
-                    $insertData[] = [
-                        'user_id' => $userId,
-                        'server_rate' => $this->server['rate'],
-                        'u' => $this->data[$userId][0],
-                        'd' => $this->data[$userId][1],
-                        'record_type' => $this->recordType,
-                        'record_at' => $recordAt
-                    ];
+        $attempt = 0;
+        $maxAttempts = 3;
+        while ($attempt < $maxAttempts) {
+            try {
+                DB::beginTransaction();
+                foreach(array_keys($this->data) as $userId){
+                    $userdata = StatUser::where('record_at', $recordAt)
+                        ->where('server_rate', $this->server['rate'])
+                        ->where('user_id', $userId)
+                        ->lockForUpdate()->first();
+                    if ($userdata) {
+                        $userdata->update([
+                            'u' => $userdata['u'] + $this->data[$userId][0],
+                            'd' => $userdata['d'] + $this->data[$userId][1]
+                        ]);
+                    } else {
+                        $insertData[] = [
+                            'user_id' => $userId,
+                            'server_rate' => $this->server['rate'],
+                            'u' => $this->data[$userId][0],
+                            'd' => $this->data[$userId][1],
+                            'record_type' => $this->recordType,
+                            'record_at' => $recordAt
+                        ];
+                    }
                 }
+                if (!empty($insertData)) {
+                    StatUser::upsert($insertData, ['user_id', 'server_rate', 'record_at']);
+                }
+                DB::commit();
+                return;
+            } catch (\Exception $e) {
+                DB::rollback();
+                if (strpos($e->getMessage(), '40001') !== false || strpos(strtolower($e->getMessage()), 'deadlock') !== false) {
+                    $attempt++;
+                    if ($attempt < $maxAttempts) {
+                        sleep(5);
+                        continue;
+                    }
+                }
+                abort(500, '用户统计数据失败'. $e->getMessage());
             }
-            if (!empty($insertData)) {
-                StatUser::upsert($insertData, ['user_id', 'server_rate', 'record_at']);
-            }
-            DB::commit();
-        } catch (\Exception $e) {
-            DB::rollback();
-            abort(500, '用户统计数据失败'. $e->getMessage());
         }
     }
 }
