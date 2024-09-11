@@ -9,6 +9,7 @@ use App\Utils\CacheKey;
 use App\Utils\Helper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use App\Models\User;
 
 class UniProxyController extends Controller
 {
@@ -77,15 +78,21 @@ class UniProxyController extends Controller
     // 后端获取在线数据
     public function alivelist(Request $request)
     {
-        $maxId = Cache::remember('MAX_USER_ID', 60, function() {
-            return UserService::getMaxId();
-        });
-        $alive = Cache::remember('ALIVE_LIST', 60, function () use ($maxId) {
+        $userService = new UserService();
+        $users = $userService->getDeviceLimitedUsers();
+
+        $cacheKeys = [];
+        foreach ($users as $user) {
+            $cacheKeys['ALIVE_IP_USER_' . $user->id] = $user->id;
+        }
+
+        $alive = Cache::remember('ALIVE_LIST', 60, function () use ($cacheKeys) {
             $alive = [];
-            for ($id = 1; $id <= $maxId; $id++) {
-                $ips_array = Cache::get('ALIVE_IP_USER_' . $id);
-                if ($ips_array && isset($ips_array['alive_ip'])) {
-                    $alive[$id] = $ips_array['alive_ip'];
+            $ips_arrays = Cache::many(array_keys($cacheKeys));
+
+            foreach ($ips_arrays as $key => $data) {
+                if ($data && isset($data['alive_ip'])) {
+                    $alive[$cacheKeys[$key]] = $data['alive_ip'];
                 }
             }
             return $alive;
