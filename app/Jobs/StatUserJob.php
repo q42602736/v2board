@@ -14,9 +14,6 @@ use Illuminate\Support\Facades\DB;
 class StatUserJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-    //protected $u;
-    //protected $d;
-    //protected $userId;
     protected $data;
     protected $server;
     protected $protocol;
@@ -33,9 +30,6 @@ class StatUserJob implements ShouldQueue
     public function __construct(array $data, array $server, $protocol, $recordType = 'd')
     {
         $this->onQueue('stat');
-        //$this->u = $u;
-        //$this->d = $d;
-        //$this->userId = $userId;
         $this->data =$data;
         $this->server = $server;
         $this->protocol = $protocol;
@@ -55,32 +49,40 @@ class StatUserJob implements ShouldQueue
         }
         $attempt = 0;
         $maxAttempts = 3;
+        $existingData = StatUser::where('record_at', $recordAt)
+        ->where('server_rate', $this->server['rate'])
+        ->whereIn('user_id', array_keys($this->data))
+        ->select(['id'])
+        ->get()
+        ->keyBy('user_id');
+
+        $insertData = [];
         while ($attempt < $maxAttempts) {
             try {
                 DB::beginTransaction();
-                foreach(array_keys($this->data) as $userId){
-                    $userdata = StatUser::where('record_at', $recordAt)
-                        ->where('server_rate', $this->server['rate'])
-                        ->where('user_id', $userId)
-                        ->lockForUpdate()->first();
-                    if ($userdata) {
-                        $userdata->update([
-                            'u' => $userdata['u'] + $this->data[$userId][0],
-                            'd' => $userdata['d'] + $this->data[$userId][1]
+                foreach($this->data as $userId => $trafficData){
+                    if (isset($existingData[$userId])) {
+                        $userdata = $existingData[$userId];
+                        StatUser::where('id', $userdata['id'])    
+                        ->update([
+                            'u' => DB::raw("u + {$trafficData[0]}"),
+                            'd' => DB::raw("d + {$trafficData[1]}")
                         ]);
                     } else {
                         $insertData[] = [
                             'user_id' => $userId,
                             'server_rate' => $this->server['rate'],
-                            'u' => $this->data[$userId][0],
-                            'd' => $this->data[$userId][1],
+                            'u' => $trafficData[0],
+                            'd' => $trafficData[1],
                             'record_type' => $this->recordType,
                             'record_at' => $recordAt
                         ];
                     }
                 }
                 if (!empty($insertData)) {
-                    StatUser::upsert($insertData, ['user_id', 'server_rate', 'record_at']);
+                    collect($insertData)->chunk(500)->each(function ($chunk) {
+                        StatUser::upsert($chunk->toArray(), ['user_id', 'server_rate', 'record_at']);
+                    });
                 }
                 DB::commit();
                 return;
@@ -89,7 +91,7 @@ class StatUserJob implements ShouldQueue
                 if (strpos($e->getMessage(), '40001') !== false || strpos(strtolower($e->getMessage()), 'deadlock') !== false) {
                     $attempt++;
                     if ($attempt < $maxAttempts) {
-                        sleep(5);
+                        sleep(pow(2, $attempt));
                         continue;
                     }
                 }
