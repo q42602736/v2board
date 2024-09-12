@@ -81,8 +81,7 @@ class UniProxyController extends Controller
         $userService = new UserService();
         $users = $userService->getDeviceLimitedUsers();
         if ($users->isEmpty()) {
-            return 
-response()->json(['alive' => (object)[]]);        }
+            return response()->json(['alive' => (object)[]]);        }
         $cacheKeys = [];
         foreach ($users as $user) {
             $cacheKeys['ALIVE_IP_USER_' . $user->id] = $user->id;
