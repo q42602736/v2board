@@ -5995,6 +5995,21 @@
                     checked: parseInt(r.show_info_to_server_enable),
                     onChange: e=>this.set("subscribe", "show_info_to_server_enable", e ? 1 : 0)
                 })))), f.a.createElement(s["a"].TabPane, {
+                    tab: "\u5145\u503c",
+                    key: "deposit"
+                }, f.a.createElement("div", {
+                    className: ""
+                }, f.a.createElement(m, {
+                    title: "\u5145\u503c\u5956\u52b1",
+                    description: "\u5145\u503c\u4e00\u5b9a\u91d1\u989d\u53ef\u4ee5\u83b7\u5f97\u7684\u5956\u52b1\u3002"
+                }, f.a.createElement("textarea", {
+                    rows: "2",
+                    type: "text",
+                    className: "form-control",
+                    placeholder: "\u8bf7\u8f93\u5165 \u5145\u503c\u91d1\u989d:\u5956\u52b1\u91d1\u989d,\u9017\u53f7\u5206\u5272\n\u5982 50:18,100:38, 200:88",
+                    defaultValue: e.deposit.deposit_bounus,
+                    onChange: e=>this.set("deposit", "deposit_bounus", e.target.value.split(","))
+                })))), f.a.createElement(s["a"].TabPane, {
                     tab: "\u9080\u8bf7&\u4f63\u91d1",
                     key: "invite"
                 }, f.a.createElement("div", {
@@ -16692,6 +16707,7 @@
             e
         }
         var h = {
+            deposit: {},
             invite: {},
             site: {},
             subscribe: {},
@@ -16721,7 +16737,7 @@
                     var n = e.key
                       , r = t.put;
                     return u().mark(function e() {
-                        var t, i, o;
+                        var t, i, j, o;
                         return u().wrap(function(e) {
                             while (1)
                                 switch (e.prev = e.next) {
@@ -16756,6 +16772,7 @@
                                 case 9:
                                     return "string" === typeof (null === (t = o.data.invite) || void 0 === t ? void 0 : t.commission_withdraw_method) && (o.data.invite.commission_withdraw_method = o.data.invite.commission_withdraw_method.split(",")),
                                     "string" === typeof (null === (i = o.data.site) || void 0 === i ? void 0 : i.email_whitelist_suffix) && (o.data.site.email_whitelist_suffix = o.data.site.email_whitelist_suffix.split(",")),
+                                    "string" === typeof (null === (j = o.data.deposit) || void 0 === j ? void 0 : j.deposit_bounus) && (o.data.deposit.deposit_bounus = o.data.deposit.deposit_bounus.split(",")),
                                     e.next = 13,
                                     r({
                                         type: "setState",
@@ -80428,7 +80445,7 @@
             path: "/coupon",
             exact: !0,
             component: n("Q55k").default
-        },{
+        }, {
             path: "/giftcard",
             exact: !0,
             component: n("showgiftcardpage").default
@@ -93858,7 +93875,8 @@
                             1: "\u65b0\u8d2d",
                             2: "\u7eed\u8d39",
                             3: "\u53d8\u66f4",
-                            4: "\u6d41\u91cf\u5305"
+                            4: "\u6d41\u91cf\u5305",
+                            9: "\u5145\u503c"
                         };
                         return t[e]
                     }
