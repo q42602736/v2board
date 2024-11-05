@@ -1039,7 +1039,7 @@
                   , t = [];
                 return t.push({
                     title: "Hiddify",
-                    href: "hiddify://import/" + encodeURIComponent(e + "&flag=sing-box") + "#" + window.settings.title
+                    href: "hiddify://import/" + e + "&flag=sing" + "#" + window.settings.title
                 }), t.push({
                     title: "Sing-box",
                     href: "sing-box://import-remote-profile?url=" + encodeURIComponent(e + "&flag=sing-box") + "#" + window.settings.title
