@@ -12339,13 +12339,6 @@
                         grpc: JSON.stringify({
                             serviceName: "GunService"
                         }, null, 4),
-                        quic: JSON.stringify({
-                            security: "none",
-                            key: "",
-                            header: {
-                                type: "none"
-                            }
-                        }, null, 4),
                         kcp: JSON.stringify({
                             header: {
                                 type: "none"
@@ -12533,8 +12526,6 @@
                 }, "WebSocket"), d.a.createElement(a["a"].Option, {
                     value: "grpc"
                 }, "gRPC"), d.a.createElement(a["a"].Option, {
-                    value: "quic"
-                }, "QUIC"), d.a.createElement(a["a"].Option, {
                     value: "kcp"
                 }, "mKCP"), d.a.createElement(a["a"].Option, {
                     value: "httpupgrade"
@@ -102993,13 +102984,6 @@
                             path: "/",
                             host: "xtls.github.io"
                         }, null, 4),
-                        quic: JSON.stringify({
-                            security: "none",
-                            key: "",
-                            header: {
-                                type: "none"
-                            }
-                        }, null, 4),
                         kcp: JSON.stringify({
                             header: {
                                 type: "none"
@@ -103181,9 +103165,7 @@
                     value: "grpc"
                 }, "gRPC"), y.a.createElement(N["a"].Option, {
                     value: "h2"
-                }, "HTTP\/2"), y.a.createElement(N["a"].Option, {
-                    value: "quic"
-                }, "QUIC"), y.a.createElement(N["a"].Option, {
+                }, "HTTP\/2"),  y.a.createElement(N["a"].Option, {
                     value: "kcp"
                 }, "mKCP"), y.a.createElement(N["a"].Option, {
                     value: "httpupgrade"
