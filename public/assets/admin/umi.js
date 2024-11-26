@@ -12349,7 +12349,7 @@
                             path: "/",
                             host: "xtls.github.io"
                         }, null, 4),
-                        splithttp: JSON.stringify({
+                        xhttp: JSON.stringify({
                             path: "/",
                             host: "xtls.github.io"
                         }, null, 4)
@@ -12530,8 +12530,8 @@
                 }, "mKCP"), d.a.createElement(a["a"].Option, {
                     value: "httpupgrade"
                 }, "HTTPUpgrade"), d.a.createElement(a["a"].Option, {
-                    value: "splithttp"
-                }, "SplitHTTP")))), d.a.createElement("div", {
+                    value: "xhttp"
+                }, "XHTTP")))), d.a.createElement("div", {
                     className: "form-group"
                 }, d.a.createElement("label", null, d.a.createElement(o["a"], {
                     placement: "top"
@@ -102994,7 +102994,7 @@
                             path: "/",
                             host: "xtls.github.io"
                         }, null, 4),
-                        splithttp: JSON.stringify({
+                        xhttp: JSON.stringify({
                             path: "/",
                             host: "xtls.github.io"
                         }, null, 4)
@@ -103170,8 +103170,8 @@
                 }, "mKCP"), y.a.createElement(N["a"].Option, {
                     value: "httpupgrade"
                 }, "HTTPUpgrade"), y.a.createElement(N["a"].Option, {
-                    value: "splithttp"
-                }, "SplitHTTP")))), y.a.createElement("div", {
+                    value: "xhttp"
+                }, "XHTTP")))), y.a.createElement("div", {
                     className: "row"
                 }, y.a.createElement("div", {
                     className: "form-group col-md-12 col-xs-12"
