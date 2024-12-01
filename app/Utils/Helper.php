@@ -334,9 +334,6 @@ class Helper
             case 'kcp':
                 self::configureKcpSettings($settings, $config);
                 break;
-            case 'h2':
-                self::configureH2Settings($settings, $config);
-                break;
             case 'httpupgrade':
                 self::configureHttpupgradeSettings($settings, $config);
                 break;
@@ -373,12 +370,6 @@ class Helper
         if (isset($settings['seed'])) {
             $config['seed'] = $settings['seed'];
         }
-    }
-	
-    public static function configureH2Settings($settings, &$config)
-    {
-        $config['path'] = $settings['path'] ?? '';
-        $config['host'] = $settings['host'] ?? '';
     }
 
     public static function configureHttpupgradeSettings($settings, &$config)

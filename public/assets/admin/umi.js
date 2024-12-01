@@ -102980,10 +102980,6 @@
                         grpc: JSON.stringify({
                             serviceName: "GunService"
                         }, null, 4),
-                        h2: JSON.stringify({
-                            path: "/",
-                            host: "xtls.github.io"
-                        }, null, 4),
                         kcp: JSON.stringify({
                             header: {
                                 type: "none"
@@ -103164,8 +103160,6 @@
                 }, "WebSocket"), y.a.createElement(N["a"].Option, {
                     value: "grpc"
                 }, "gRPC"), y.a.createElement(N["a"].Option, {
-                    value: "h2"
-                }, "HTTP\/2"),  y.a.createElement(N["a"].Option, {
                     value: "kcp"
                 }, "mKCP"), y.a.createElement(N["a"].Option, {
                     value: "httpupgrade"
