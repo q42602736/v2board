@@ -41105,8 +41105,8 @@
                         return 1 === t.status ? d.a.createElement("span", null, d.a.createElement(h["a"], {
                             status: "success"
                         }), "\u5df2\u5173\u95ed") : d.a.createElement("span", null, d.a.createElement(h["a"], {
-                            status: e ? "error" : "processing"
-                        }), e ? "\u5f85\u56de\u590d" : "\u5df2\u56de\u590d")
+                            status: e ? "processing" : "error"
+                        }), e ? "\u5df2\u56de\u590d" : "\u5f85\u56de\u590d")
                     }
                 }, {
                     title: "\u521b\u5efa\u65f6\u95f4",
