@@ -41096,10 +41096,10 @@
                     key: "reply_status",
                     filters: 1 !== a.status && [{
                         text: "\u5df2\u56de\u590d",
-                        value: 0
+                        value: 1
                     }, {
                         text: "\u5f85\u56de\u590d",
-                        value: 1
+                        value: 0
                     }],
                     render: (e,t)=>{
                         return 1 === t.status ? d.a.createElement("span", null, d.a.createElement(h["a"], {
