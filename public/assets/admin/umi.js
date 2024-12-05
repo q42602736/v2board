@@ -111244,7 +111244,7 @@
                         }
                     })(),
                     disabled: this.state.submit.type === 4,
-                    placeholder: "\u8bf7\u8f93\u5165\u503c",
+                    placeholder: this.state.submit.type === 5 ? "\u4e00\u6b21\u6027\u5957\u9910\u8f93\u51650" : "\u8bf7\u8f93\u5165\u503c",
                     value: this.state.submit.type === 4 ? 0 : this.state.submit.value,
                     onChange: e=>{
                         this.setState({
