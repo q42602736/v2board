@@ -26109,7 +26109,7 @@
           , c = s.host
           , u = document.createElement("link");
         u.rel = "stylesheet",
-        u.href = c ? "./theme/".concat(l.color, ".css") : "./assets/admin/theme/".concat(l.color, ".css"),
+        u.href = c ? "./theme/".concat(l.color, ".css") : "/assets/admin/theme/".concat(l.color, ".css"),
         document.getElementsByTagName("head")[0].appendChild(u),
         a.a.locale("zh-cn"),
         "1" === Object(r["d"])("dark_mode") && Object(i["enable"])({
@@ -102992,7 +102992,9 @@
                         }, null, 4),
                         xhttp: JSON.stringify({
                             path: "/",
-                            host: "xtls.github.io"
+                            host: "xtls.github.io",
+                            mode: "auto",
+                            extra: {}
                         }, null, 4)
                     };
                     return y.a.createElement("div", {
