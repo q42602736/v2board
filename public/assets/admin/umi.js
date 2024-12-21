@@ -6010,6 +6010,27 @@
                     defaultValue: e.deposit.deposit_bounus,
                     onChange: e=>this.set("deposit", "deposit_bounus", e.target.value.split(","))
                 })))), f.a.createElement(s["a"].TabPane, {
+                    tab: "\u5de5\u5355",
+                    key: "ticket"
+                }, f.a.createElement("div", {
+                    className: ""
+                }, f.a.createElement(m, {
+                    title: "\u5de5\u5355\u8bbe\u7f6e",
+                    description: "\u8bf7\u9009\u62e9\u5de5\u5355\u7684\u72b6\u6001\u3002"
+                }, f.a.createElement("select", {
+                    onChange: e => this.set("ticket", "ticket_status", e.target.value),
+                    className: "form-control",
+                    value: e.ticket.ticket_status || 0,
+                }, f.a.createElement("option", {
+                    value: 0
+                }, "\u5b8c\u5168\u5f00\u653e\u5de5\u5355"),
+                   f.a.createElement("option", {
+                    value: 1
+                }, "\u4ec5\u9650\u6709\u4ed8\u8d39\u8ba2\u5355\u7528\u6237"),
+                   f.a.createElement("option", {
+                    value: 2
+                }, "\u5b8c\u5168\u7981\u6b62\u5de5\u5355")
+                )))), f.a.createElement(s["a"].TabPane, {
                     tab: "\u9080\u8bf7&\u4f63\u91d1",
                     key: "invite"
                 }, f.a.createElement("div", {
@@ -16698,6 +16719,7 @@
             e
         }
         var h = {
+            ticket: {},
             deposit: {},
             invite: {},
             site: {},
