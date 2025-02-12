@@ -102994,6 +102994,7 @@
                             }
                         }, null, 4),
                         ws: JSON.stringify({
+                            security: "auto",//不支持vless，vmess可选加密类型：auto、aes-128-gcm、chacha20-poly1305、none
                             path: "/",
                             headers: {
                                 Host: "xtls.github.io"
