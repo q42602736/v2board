@@ -102704,22 +102704,20 @@
                     placeholder: "\u7559\u7a7a\u81ea\u52a8\u751f\u6210",
                     onChange: e=>this.formChange("obfs_password", e.target.value)
                 }))), y.a.createElement("div", {
-                    className: "row"
-                }, y.a.createElement("div", {
-                    className: "form-group col-md-6 col-xs-12"
+                    className: "form-group"
                 }, y.a.createElement("label", null, "\u4e0a\u884c\u5e26\u5bbd"), y.a.createElement(s["a"], {
                     addonAfter: "Mbps",
-                    placeholder: "\u8bf7\u6839\u636e\u5b9e\u9645\u7f51\u7edc\u60c5\u51b5\u5c3d\u91cf\u51c6\u786e\u5730\u586b\u5199",
+                    placeholder: "\u670d\u52a1\u7aef\u53d1\u9001\u5e26\u5bbd,\u7559\u7a7a\u6216\u586b0\u4f7f\u7528BBR",
                     value: e.up_mbps,
                     onChange: e=>this.formChange("up_mbps", e.target.value)
                 })), y.a.createElement("div", {
-                    className: "form-group col-md-6 col-xs-12"
+                    className: "form-group"
                 }, y.a.createElement("label", null, "\u4e0b\u884c\u5e26\u5bbd"), y.a.createElement(s["a"], {
                     addonAfter: "Mbps",
-                    placeholder: "\u8bf7\u6839\u636e\u5b9e\u9645\u7f51\u7edc\u60c5\u51b5\u5c3d\u91cf\u51c6\u786e\u5730\u586b\u5199",
+                    placeholder: "\u670d\u52a1\u7aef\u63a5\u6536\u5e26\u5bbd,\u7559\u7a7a\u6216\u586b0\u4f7f\u7528BBR",
                     value: e.down_mbps,
                     onChange: e=>this.formChange("down_mbps", e.target.value)
-                }))), y.a.createElement("div", {
+                })), y.a.createElement("div", {
                     className: "form-group"
                 }, y.a.createElement("label", null, y.a.createElement(u["a"], {
                     placement: "top"
