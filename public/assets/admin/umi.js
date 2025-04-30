@@ -104260,7 +104260,7 @@
                     return "serverTrojan/".concat(t);
                 case "hysteria":
                     return "serverHysteria/".concat(t);
-                case "Tuic":
+                case "tuic":
                     return "serverTuic/".concat(t);
                 case "vless":
                     return "serverVless/".concat(t)
