@@ -104630,6 +104630,11 @@
                     record: this.record
                 }, y.a.createElement("a", null, y.a.createElement(m["a"], {
                     type: "form"
+                }), " \u7f16\u8f91")), "tuic" === (null === (r = this.record) || void 0 === r ? void 0 : r.type) && y.a.createElement(mTuic, {
+                    key: Math.random(),
+                    record: this.record
+                }, y.a.createElement("a", null, y.a.createElement(m["a"], {
+                    type: "form"
                 }), " \u7f16\u8f91")), "hysteria" === (null === (r = this.record) || void 0 === r ? void 0 : r.type) && y.a.createElement(W, {
                     key: Math.random(),
                     record: this.record
