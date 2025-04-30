@@ -97207,23 +97207,22 @@
                     className: "col-lg-12 js-appear-enabled animated",
                     "data-toggle": "appear"
                 }, l.a.createElement("div", {
-                    className: "block border-bottom mb-0"
+                    className: "block border-bottom mb-0 v2board-stats-bar"
                 }, l.a.createElement("div", {
                     className: "block-content"
                 }, l.a.createElement("div", {
-                    className: "px-sm-3 clearfix"
-                }, l.a.createElement("div", { 
-                    className: "d-inline-block "
+                    className: "d-flex align-items-center"
+                }, l.a.createElement("div", {
+                    className: "pr-4 pr-sm-5 pl-0 pl-sm-3 "
                 }, l.a.createElement("i", {
                     className: "fa fa-users fa-2x text-gray-light float-right"
                 }), l.a.createElement("div", {
                     className: "text-muted mb-1",
                     style: { width: '120px' }
-                }, "\u5728\u7ebf\u4eba\u6570"), 
-                l.a.createElement("div", {
-                    className: "display-4 text-black font-w300"
-                }, t.online_user ? t.online_user : "0")) ,l.a.createElement("div", {
-                    className: "pl-5 d-inline-block"
+                }, "\u5728\u7ebf\u4eba\u6570"), l.a.createElement("div", {
+                    className: "display-4 text-black font-w300 mb-2"
+                }, t.online_user ? t.online_user : "0")), l.a.createElement("div", {
+                    className: "pr-4 pr-sm-5 pl-0 pl-sm-3 "
                 }, l.a.createElement("i", {
                     className: "fa fa-chart-line fa-2x text-gray-light float-right"
                 }), l.a.createElement("p", {
@@ -97232,7 +97231,16 @@
                     className: "display-4 text-black font-w300 mb-2"
                 }, t.day_income ? (t.day_income / 100).toFixed(2) : "0.00", l.a.createElement("span", {
                     className: "font-size-h5 font-w600 text-muted"
-                }, n.site.currency))))))), l.a.createElement("div", {
+                }, n.site.currency))) , l.a.createElement("div", {
+                    className: "pr-4 pr-sm-5 pl-0 pl-sm-3 "
+                }, l.a.createElement("i", {
+                    className: "fa fa-user fa-2x text-gray-light float-right"
+                }), l.a.createElement("div", {
+                    className: "text-muted mb-1",
+                    style: { width: '120px' }
+                }, "\u5b9e\u65f6\u6ce8\u518c"), l.a.createElement("div", {
+                    className: "display-4 text-black font-w300 mb-2"
+                }, t.day_register_total ? t.day_register_total : "0")))))), l.a.createElement("div", {
                     className: "col-lg-12 js-appear-enabled animated",
                     "data-toggle": "appear"
                 }, l.a.createElement("div", {
