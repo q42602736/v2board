@@ -123,21 +123,12 @@
                                         🔒 如果您未申请此验证码，请忽略此邮件。为了您的账户安全，请勿将验证码告知他人。
                                     </div>
 
-                                    <!-- 按钮 -->
-                                    <a href="{{$url}}" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; padding: 16px 32px; border-radius: 12px; font-weight: 600; font-size: 16px; margin: 20px 0; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);">
-                                        返回 {{$name}}
-                                    </a>
                                 </td>
                             </tr>
                             <!-- 底部 -->
                             <tr>
                                 <td class="footer" style="background: #f8fafc; padding: 30px; text-align: center; border-top: 1px solid #e2e8f0;" align="center" valign="top">
-                                    <div style="margin-bottom: 20px;">
-                                        <a href="{{$url}}/#/subscribe" style="color: #667eea; text-decoration: none; margin: 0 15px; font-weight: 500; font-size: 14px;">我的订阅</a>
-                                        <a href="{{$url}}/#/knowledge" style="color: #667eea; text-decoration: none; margin: 0 15px; font-weight: 500; font-size: 14px;">使用教程</a>
-                                        <a href="{{$url}}/#/profile" style="color: #667eea; text-decoration: none; margin: 0 15px; font-weight: 500; font-size: 14px;">个人中心</a>
-                                    </div>
-                                    <div style="color: #64748b; font-size: 12px; margin-top: 15px;">
+                                    <div style="color: #64748b; font-size: 12px;">
                                         © {{$name}}. All Rights Reserved. | 本邮件由系统自动发送，请勿回复
                                     </div>
                                 </td>
