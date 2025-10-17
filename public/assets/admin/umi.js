@@ -6225,6 +6225,17 @@
                 }, f.a.createElement("div", {
                     className: ""
                 }, f.a.createElement(m, {
+                    title: "\u8282\u70b9\u5bf9\u63a5API\u5730\u5740",
+                    description: "v2node\u8282\u70b9\u4e00\u952e\u5bf9\u63a5\u4e13\u7528\u5730\u5740\u3002"
+                }, f.a.createElement("input", {
+                    type: "text",
+                    className: "form-control",
+                    placeholder: "\u8bf7\u8f93\u5165",
+                    defaultValue: u.server_api_url,
+                    onChange: e=>this.set("server", "server_api_url", e.target.value)
+                }))), f.a.createElement("div", {
+                    className: ""
+                }, f.a.createElement(m, {
                     title: "\u901a\u8baf\u5bc6\u94a5",
                     description: "V2board\u4e0e\u8282\u70b9\u901a\u8baf\u7684\u5bc6\u94a5\uff0c\u4ee5\u4fbf\u6570\u636e\u4e0d\u4f1a\u88ab\u4ed6\u4eba\u83b7\u53d6\u3002"
                 }, f.a.createElement("input", {
@@ -106530,7 +106541,17 @@
                         key: e.id
                     },
                     e.remarks)
-                })))), y.a.createElement("div", {
+                }))), y.a.createElement("div", {
+                    className: "form-group"
+                }, y.a.createElement("label", null, "\u4e00\u952e\u5b89\u88c5\u6307\u4ee4"), y.a.createElement(s["a"].TextArea, {
+                    value: e.install_command,
+                    rows: 4,
+                    readOnly: true,
+                    style: {
+                        backgroundColor: "#f5f5f5a0",
+                        cursor: "text"
+                    }
+                }))), y.a.createElement("div", {
                     className: "v2board-drawer-action"
                 },
                 y.a.createElement(l["a"], {
