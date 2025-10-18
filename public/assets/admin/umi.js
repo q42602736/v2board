@@ -106112,11 +106112,20 @@
                 }
             }
             formChange(e, t) {
-                this.setState({
-                    server: I()({},
-                    this.state.server, { [e] : t
+                if (e === "protocol" && ["anytls", "hysteria2", "trojan", "tuic"].includes(t)) {
+                    this.setState({
+                        server: I()({}, this.state.server, {
+                            protocol: t,
+                            tls: 1
+                        })
+                    });
+                } else {
+                    this.setState({
+                        server: I()({},
+                        this.state.server, { [e] : t
+                        })
                     })
-                })
+                }
             }
             changeServer(e, t) {
                 this.setState({
