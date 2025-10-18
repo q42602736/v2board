@@ -100722,7 +100722,8 @@
             routeActionText: {
                 block: "\u7981\u6b62\u8bbf\u95ee",
                 dns: "\u6307\u5b9aDNS\u670d\u52a1\u5668\u8fdb\u884c\u89e3\u6790",
-                route: "\u6307\u5b9a\u51fa\u7ad9\u670d\u52a1\u5668"
+                route: "\u6307\u5b9a\u51fa\u7ad9\u670d\u52a1\u5668(\u57df\u540d\u76ee\u6807)",
+                route_ip: "\u6307\u5b9a\u51fa\u7ad9\u670d\u52a1\u5668(IP\u76ee\u6807)"
             }
         }
     },
@@ -111167,7 +111168,7 @@
                         type: "link"
                     }), "\u586b\u5199\u53c2\u8003")), f.a.createElement(y["a"].TextArea, {
                     rows: 5,
-                    placeholder: "example.com(\u5173\u952e\u5b57\u5339\u914d)\ndomain:example.com(\u5b50\u57df\u540d\u5339\u914d)\ngeosite:netflix(\u9884\u5b9a\u4e49\u57df\u540d\u5217\u8868)",
+                    placeholder: "route_ip" !== this.state.route.action ? "example.com(\u5173\u952e\u5b57\u5339\u914d)\ndomain:example.com(\u5b50\u57df\u540d\u5339\u914d)\ngeosite:netflix(\u9884\u5b9a\u4e49\u57df\u540d\u5217\u8868)" : "127.0.0.1(\u5355\u4e00\u5339\u914d)\n10.0.0.0/8(\u8303\u56f4\u5339\u914d)\ngeoip:cn(\u9884\u5b9a\u4e49\u5217\u8868\u5339\u914d)",
                     value: "object" === typeof this.state.route.match ? null === (e = this.state.route.match) || void 0 === e ? void 0 : e.join("\n") : null === (t = this.state.route.match) || void 0 === t ? void 0 : null === (n = t.split(",")) || void 0 === n ? void 0 : n.join("\n"),
                     onChange: e=>{
                         var t;
@@ -111198,7 +111199,9 @@
                     value: "dns"
                 }, b["a"].routeActionText["dns"]), f.a.createElement(v["a"].Option, {
                     value: "route"
-                }, b["a"].routeActionText["route"])))), "dns" === this.state.route.action && f.a.createElement("div", {
+                }, b["a"].routeActionText["route"]), f.a.createElement(v["a"].Option, {
+                    value: "route_ip"
+                }, b["a"].routeActionText["route_ip"])))), "dns" === this.state.route.action && f.a.createElement("div", {
                     className: "form-group"
                 }, f.a.createElement("label", {
                     for: "example-text-input-alt"
@@ -111212,7 +111215,7 @@
                             })
                         })
                     }
-                })), "route" === this.state.route.action && f.a.createElement("div", {
+                })), ("route" === this.state.route.action || "route_ip"=== this.state.route.action)&& f.a.createElement("div", {
                     className: "form-group"
                 }, f.a.createElement("label", {
                     for: "example-text-input-alt"
