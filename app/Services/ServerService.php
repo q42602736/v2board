@@ -221,6 +221,7 @@ class ServerService
         }
         return $servers;
     }
+
     public function getAvailableServers(User $user)
     {
         $servers = array_merge(
@@ -376,20 +377,6 @@ class ServerService
         }
         return $servers;
     }
-    public function getAllV2node()
-    {
-        $servers = ServerV2node::orderBy('sort', 'ASC')
-            ->get()
-            ->toArray();
-        foreach ($servers as $k => $v) {
-            $servers[$k]['type'] = 'v2node';
-            if (isset($v['padding_scheme'])) {
-                $servers[$k]['padding_scheme'] = json_encode($v['padding_scheme']);
-            }
-        }
-        return $servers;
-    }
-
 
     public function getAllV2node()
     {
