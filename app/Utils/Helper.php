@@ -103,10 +103,9 @@ class Helper
         $path = config('v2board.subscribe_path', '/api/v1/client/subscribe');
         if (empty($path)) {
             $path = '/api/v1/client/subscribe';
-        }
+        } 
         $subscribeUrls = explode(',', config('v2board.subscribe_url'));
         $subscribeUrl = $subscribeUrls[rand(0, count($subscribeUrls) - 1)];
-        switch ($submethod) {
         switch ($submethod) {
             case 0:
                 $path = "{$path}?token={$token}";
@@ -283,8 +282,7 @@ class Helper
                 $config['path'] = $networkSettings['path'] ?? null;
                 $config['host'] = $networkSettings['host'] ?? null;
                 $config['mode'] = $networkSettings['mode'] ?? 'auto';
-                // 对于V2bX后端，保持extra为对象格式，不转换为JSON字符串
-                $config['extra'] = $networkSettings['extra'] ?? null;
+                $config['extra'] = isset($networkSettings['extra']) ? json_encode($networkSettings['extra'], JSON_UNESCAPED_SLASHES) : null;
                 break;
         }
 
@@ -578,7 +576,6 @@ class Helper
         $config['path'] = $settings['path'] ?? '';
         $config['host'] = $settings['host'] ?? '';
         $config['mode'] = $settings['mode'] ?? 'auto';
-        // 不要将extra转换为JSON字符串，保持原始对象格式给V2bX使用
-        $config['extra'] = $settings['extra'] ?? null;
+        $config['extra'] = isset($settings['extra']) ? json_encode($settings['extra'], JSON_UNESCAPED_SLASHES) : null;
     }
 }
