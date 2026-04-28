@@ -117,8 +117,6 @@ class ConfigController extends Controller
                 'show_subscribe_method' => (int)config('v2board.show_subscribe_method', 0),
                 'show_subscribe_expire' => (int)config('v2board.show_subscribe_expire', 5),
                 'subscribe_expire_minutes' => (int)config('v2board.subscribe_expire_minutes', 0)
-                'show_subscribe_method' => (int)config('v2board.show_subscribe_method', 0),
-                'show_subscribe_expire' => (int)config('v2board.show_subscribe_expire', 5),
             ],
             'frontend' => [
                 'frontend_theme' => config('v2board.frontend_theme', 'v2board'),
