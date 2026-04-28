@@ -28,6 +28,9 @@ class Surge
         $proxyGroup = '';
 
         foreach ($servers as $item) {
+            if (($item['type'] ?? null) === 'v2node' && isset($item['protocol'])) {
+                $item['type'] = $item['protocol'];
+            }
             if ($item['type'] === 'shadowsocks') {
                 // [Proxy]
                 $proxies .= self::buildShadowsocks($user['uuid'], $item);
@@ -46,6 +49,11 @@ class Surge
             }elseif ($item['type'] === 'hysteria' && $item['version'] === 2) { //surge只支持hysteria2
                 // [Proxy]
                 $proxies .= self::buildHysteria($user['uuid'], $item);
+                // [Proxy Group]
+                $proxyGroup .= $item['name'] . ', ';
+            }elseif ($item['type'] === 'anytls') {
+                // [Proxy]
+                $proxies .= self::buildAnyTLS($user['uuid'], $item);
                 // [Proxy Group]
                 $proxyGroup .= $item['name'] . ', ';
             }
@@ -212,6 +220,30 @@ class Surge
         }
         $config = array_filter($config);
         $uri = implode(',', $config);
+        $uri .= "\r\n";
+        return $uri;
+    }
+
+    public static function buildAnyTLS($password, $server)
+    {
+        $tlsSettings = $server['tls_settings'] ?? [];
+        $allowInsecure = ($server['insecure'] ?? ($tlsSettings['allow_insecure'] ?? 0)) == 1 ? 'true' : 'false';
+        $sni = $server['server_name'] ?? ($tlsSettings['server_name'] ?? '');
+
+        $config = [
+            "{$server['name']}=anytls",
+            "{$server['host']}",
+            "{$server['port']}",
+            "password={$password}",
+            "skip-cert-verify={$allowInsecure}",
+            'tfo=true',
+        ];
+
+        if ($sni) {
+            $config[] = "sni={$sni}";
+        }
+
+        $uri = implode(', ', $config);
         $uri .= "\r\n";
         return $uri;
     }

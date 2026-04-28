@@ -99,8 +99,6 @@ class VlessController extends Controller
             }
             $params['network_settings'] = $ns;
         }
-
-
         if (isset($params['encryption']) && $params['encryption'] == 'mlkem768x25519plus') {
             $keyPair = SodiumCompat::crypto_box_keypair();
             $params['encryption_settings'] = $params['encryption_settings'] ?? [];

@@ -1,8 +1,6 @@
 <?php
 
 namespace App\Http\Middleware;
-
-
 use Closure;
 use App\Models\User;
 use App\Utils\Helper;
@@ -23,7 +21,7 @@ class Client
         if (empty($token)) {
             abort(403, 'token is null');
         }
-         $submethod = (int)config('v2board.show_subscribe_method', 0);
+        $submethod = (int)config('v2board.show_subscribe_method', 0);
         switch ($submethod) {
             case 0:
                 break;
