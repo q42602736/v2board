@@ -111,9 +111,7 @@ class UserService
             case ($plan->reset_traffic_method === NULL) : {
                 $resetTrafficMethod = config('v2board.reset_traffic_method', 0);
                 switch ((int)$resetTrafficMethod) {
-
                     case 0:
-
                         return 1;
                     case 1:
                         return 30;
@@ -218,7 +216,7 @@ class UserService
 
     public function isNotCompleteOrderByUserId(int $userId): bool
     {
-               return Order::where('user_id', $userId)
+        return Order::where('user_id', $userId)
             ->whereIn('status', [0, 1])
             ->exists();
     }

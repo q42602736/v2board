@@ -37,11 +37,13 @@ class ServerService
                 $server[$key]['last_check_at'] = Cache::get(CacheKey::get('SERVER_VLESS_LAST_CHECK_AT', $server[$key]['id']));
             }
             if (isset($server[$key]['tls_settings'])) {
-                if (isset($server[$key]['tls_settings']['private_key'])) {
-                    $server[$key]['tls_settings'] = array_diff_key($server[$key]['tls_settings'], array('private_key' => ''));
-                }
+                $server[$key]['tls_settings'] = array_diff_key(
+                    $server[$key]['tls_settings'],
+                    array_flip(array_filter(['private_key', 'ech_key'], function($k) use ($server, $key) {
+                        return isset($server[$key]['tls_settings'][$k]);
+                    }))
+                );
             }
-
             if (isset($server[$key]['encryption_settings'])) {
                 if (isset($server[$key]['encryption_settings']['private_key'])) {
                     $server[$key]['encryption_settings'] = array_diff_key($server[$key]['encryption_settings'], array('private_key' => ''));
@@ -203,9 +205,12 @@ class ServerService
                 $v2node[$key]['created_at'] = $v2node[$v['parent_id']]['created_at'];
             }
             if (isset($v2node[$key]['tls_settings'])) {
-                if (isset($v2node[$key]['tls_settings']['private_key'])) {
-                    $v2node[$key]['tls_settings'] = array_diff_key($v2node[$key]['tls_settings'], array('private_key' => ''));
-                }
+                $v2node[$key]['tls_settings'] = array_diff_key(
+                    $v2node[$key]['tls_settings'],
+                    array_flip(array_filter(['private_key', 'ech_key'], function($k) use ($v2node, $key) {
+                        return isset($v2node[$key]['tls_settings'][$k]);
+                    }))
+                );
             }
             if (isset($v2node[$key]['encryption_settings'])) {
                 if (isset($v2node[$key]['encryption_settings']['private_key'])) {
@@ -216,8 +221,6 @@ class ServerService
         }
         return $servers;
     }
-
-
     public function getAvailableServers(User $user)
     {
         $servers = array_merge(
@@ -388,6 +391,32 @@ class ServerService
     }
 
 
+    public function getAllV2node()
+    {
+        $servers = ServerV2node::orderBy('sort', 'ASC')
+            ->get()
+            ->toArray();
+        foreach ($servers as $k => $v) {
+            $servers[$k]['type'] = 'v2node';
+            if (isset($v['padding_scheme'])) {
+                $servers[$k]['padding_scheme'] = json_encode($v['padding_scheme']);
+            }
+
+            $apiHost = config('v2board.server_api_url', config('v2board.app_url'));
+            $apiKey = config('v2board.server_token', '');
+            $nodeId = (int) $v['id'];
+            $apiHostArg = escapeshellarg((string) $apiHost);
+            $apiKeyArg = escapeshellarg((string) $apiKey);
+            $servers[$k]['install_command'] = sprintf(
+                'wget -N https://raw.githubusercontent.com/wyx2685/v2node/master/script/install.sh && bash install.sh --api-host %s --node-id %d --api-key %s',
+                $apiHostArg,
+                $nodeId,
+                $apiKeyArg
+            );
+        }
+        return $servers;
+    }
+
     private function mergeData(&$servers)
     {
         foreach ($servers as $k => $v) {
@@ -426,7 +455,11 @@ class ServerService
     public function getRoutes(array $routeIds)
     {
         $routeIds = array_map('intval', $routeIds);
-        $routes = ServerRoute::select(['id', 'match', 'action', 'action_value'])->whereIn('id', $routeIds)->get();
+        $order = implode(',', $routeIds);
+        $routes = ServerRoute::select(['id', 'match', 'action', 'action_value'])
+            ->whereIn('id', $routeIds)
+            ->orderByRaw("FIELD(id, $order)")
+            ->get();
         foreach ($routes as $k => $route) {
             $array = json_decode($route->match, true);
             if (is_array($array)) $routes[$k]['match'] = $array;
