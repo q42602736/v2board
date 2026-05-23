@@ -115505,3 +115505,954 @@
         }
     }
 });
+;/* V2Board activity admin extension */
+(function () {
+  "use strict";
+
+  if (window.__v2boardActivityAdminLoaded) {
+    return;
+  }
+  window.__v2boardActivityAdminLoaded = true;
+
+  var ROUTES = {
+    checkin: "activity/checkin",
+    lottery: "activity/lottery"
+  };
+  var MB = 1024 * 1024;
+
+  function injectStyle() {
+    if (document.querySelector("style[data-v2board-activity-admin]")) {
+      return;
+    }
+    var style = document.createElement("style");
+    style.setAttribute("data-v2board-activity-admin", "true");
+    style.textContent = [
+      ".activity-admin-root {",
+      "  padding: 1.5rem;",
+      "}",
+      "",
+      ".activity-admin-shell {",
+      "  color: #2a2e36;",
+      "}",
+      "",
+      ".activity-admin-hero {",
+      "  display: flex;",
+      "  align-items: flex-start;",
+      "  justify-content: space-between;",
+      "  gap: 1rem;",
+      "  padding: 1.5rem;",
+      "  margin-bottom: 1rem;",
+      "  background: #ffffff;",
+      "  border: 1px solid #e4e9f3;",
+      "  border-radius: 6px;",
+      "  box-shadow: 0 2px 10px rgba(20, 32, 54, 0.04);",
+      "}",
+      "",
+      ".activity-admin-eyebrow {",
+      "  margin-bottom: 0.25rem;",
+      "  color: #6c757d;",
+      "  font-size: 0.75rem;",
+      "  font-weight: 700;",
+      "  letter-spacing: 0.08em;",
+      "  text-transform: uppercase;",
+      "}",
+      "",
+      ".activity-admin-title {",
+      "  margin: 0;",
+      "  color: #171717;",
+      "  font-size: 1.5rem;",
+      "  line-height: 1.25;",
+      "}",
+      "",
+      ".activity-admin-subtitle {",
+      "  margin: 0.5rem 0 0;",
+      "  color: #6c757d;",
+      "}",
+      "",
+      ".activity-admin-actions,",
+      ".activity-admin-row-actions,",
+      ".activity-admin-tabs,",
+      ".activity-admin-form-actions {",
+      "  display: flex;",
+      "  flex-wrap: wrap;",
+      "  gap: 0.5rem;",
+      "}",
+      "",
+      ".activity-admin-tabs {",
+      "  margin-bottom: 1rem;",
+      "}",
+      "",
+      ".activity-admin-tab,",
+      ".activity-admin-button {",
+      "  display: inline-flex;",
+      "  align-items: center;",
+      "  justify-content: center;",
+      "  min-height: 2.25rem;",
+      "  padding: 0.375rem 0.75rem;",
+      "  color: #495057;",
+      "  font-weight: 600;",
+      "  background: #ffffff;",
+      "  border: 1px solid #d4dcec;",
+      "  border-radius: 4px;",
+      "  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;",
+      "}",
+      "",
+      ".activity-admin-tab:hover,",
+      ".activity-admin-button:hover {",
+      "  color: #0665d0;",
+      "  border-color: #0665d0;",
+      "}",
+      "",
+      ".activity-admin-tab.is-active,",
+      ".activity-admin-button.is-primary {",
+      "  color: #ffffff;",
+      "  background: #0665d0;",
+      "  border-color: #0665d0;",
+      "}",
+      "",
+      ".activity-admin-button.is-danger {",
+      "  color: #ffffff;",
+      "  background: #e04f1a;",
+      "  border-color: #e04f1a;",
+      "}",
+      "",
+      ".activity-admin-button.is-success {",
+      "  color: #ffffff;",
+      "  background: #82b54b;",
+      "  border-color: #82b54b;",
+      "}",
+      "",
+      ".activity-admin-button:disabled {",
+      "  cursor: not-allowed;",
+      "  opacity: 0.6;",
+      "}",
+      "",
+      ".activity-admin-grid {",
+      "  display: grid;",
+      "  grid-template-columns: repeat(4, minmax(0, 1fr));",
+      "  gap: 1rem;",
+      "  margin-bottom: 1rem;",
+      "}",
+      "",
+      ".activity-admin-stat,",
+      ".activity-admin-card {",
+      "  background: #ffffff;",
+      "  border: 1px solid #e4e9f3;",
+      "  border-radius: 6px;",
+      "  box-shadow: 0 2px 10px rgba(20, 32, 54, 0.04);",
+      "}",
+      "",
+      ".activity-admin-stat {",
+      "  padding: 1rem;",
+      "}",
+      "",
+      ".activity-admin-stat-value {",
+      "  color: #171717;",
+      "  font-size: 1.5rem;",
+      "  font-weight: 700;",
+      "}",
+      "",
+      ".activity-admin-stat-label {",
+      "  margin-top: 0.25rem;",
+      "  color: #6c757d;",
+      "  font-size: 0.875rem;",
+      "}",
+      "",
+      ".activity-admin-card {",
+      "  margin-bottom: 1rem;",
+      "  overflow: hidden;",
+      "}",
+      "",
+      ".activity-admin-card-header {",
+      "  display: flex;",
+      "  align-items: center;",
+      "  justify-content: space-between;",
+      "  gap: 1rem;",
+      "  padding: 0.875rem 1rem;",
+      "  border-bottom: 1px solid #e4e9f3;",
+      "}",
+      "",
+      ".activity-admin-card-title {",
+      "  margin: 0;",
+      "  color: #171717;",
+      "  font-size: 1rem;",
+      "  font-weight: 700;",
+      "}",
+      "",
+      ".activity-admin-card-body {",
+      "  padding: 1rem;",
+      "}",
+      "",
+      ".activity-admin-table-wrap {",
+      "  overflow-x: auto;",
+      "}",
+      "",
+      ".activity-admin-table {",
+      "  width: 100%;",
+      "  margin: 0;",
+      "  border-collapse: collapse;",
+      "  white-space: nowrap;",
+      "}",
+      "",
+      ".activity-admin-table th,",
+      ".activity-admin-table td {",
+      "  padding: 0.75rem;",
+      "  border-top: 1px solid #e4e9f3;",
+      "  vertical-align: middle;",
+      "}",
+      "",
+      ".activity-admin-table thead th {",
+      "  color: #6c757d;",
+      "  font-size: 0.75rem;",
+      "  font-weight: 700;",
+      "  text-transform: uppercase;",
+      "  background: #f8f9fc;",
+      "  border-top: 0;",
+      "}",
+      "",
+      ".activity-admin-table tbody tr:hover {",
+      "  background: #f8f9fc;",
+      "}",
+      "",
+      ".activity-admin-badge {",
+      "  display: inline-flex;",
+      "  align-items: center;",
+      "  padding: 0.25rem 0.5rem;",
+      "  font-size: 0.75rem;",
+      "  font-weight: 700;",
+      "  border-radius: 999px;",
+      "}",
+      "",
+      ".activity-admin-badge.is-on {",
+      "  color: #456126;",
+      "  background: #eaf4df;",
+      "}",
+      "",
+      ".activity-admin-badge.is-off {",
+      "  color: #6c757d;",
+      "  background: #eef1f6;",
+      "}",
+      "",
+      ".activity-admin-badge.is-info {",
+      "  color: #054d9e;",
+      "  background: #e7f1fe;",
+      "}",
+      "",
+      ".activity-admin-modal {",
+      "  position: fixed;",
+      "  inset: 0;",
+      "  z-index: 2000;",
+      "  display: none;",
+      "  align-items: center;",
+      "  justify-content: center;",
+      "  padding: 1rem;",
+      "  background: rgba(15, 23, 42, 0.45);",
+      "}",
+      "",
+      ".activity-admin-modal.is-open {",
+      "  display: flex;",
+      "}",
+      "",
+      ".activity-admin-dialog {",
+      "  width: min(720px, 100%);",
+      "  max-height: calc(100vh - 2rem);",
+      "  overflow: auto;",
+      "  background: #ffffff;",
+      "  border-radius: 6px;",
+      "  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.25);",
+      "}",
+      "",
+      ".activity-admin-dialog-header,",
+      ".activity-admin-dialog-footer {",
+      "  padding: 1rem;",
+      "  border-bottom: 1px solid #e4e9f3;",
+      "}",
+      "",
+      ".activity-admin-dialog-footer {",
+      "  border-top: 1px solid #e4e9f3;",
+      "  border-bottom: 0;",
+      "}",
+      "",
+      ".activity-admin-dialog-title {",
+      "  margin: 0;",
+      "  font-size: 1.125rem;",
+      "}",
+      "",
+      ".activity-admin-form {",
+      "  display: grid;",
+      "  grid-template-columns: repeat(2, minmax(0, 1fr));",
+      "  gap: 1rem;",
+      "  padding: 1rem;",
+      "}",
+      "",
+      ".activity-admin-field {",
+      "  display: flex;",
+      "  flex-direction: column;",
+      "  gap: 0.375rem;",
+      "}",
+      "",
+      ".activity-admin-field.is-wide {",
+      "  grid-column: 1 / -1;",
+      "}",
+      "",
+      ".activity-admin-field label {",
+      "  margin: 0;",
+      "  color: #495057;",
+      "  font-size: 0.875rem;",
+      "  font-weight: 700;",
+      "}",
+      "",
+      ".activity-admin-field input,",
+      ".activity-admin-field select {",
+      "  width: 100%;",
+      "  min-height: 2.375rem;",
+      "  padding: 0.375rem 0.625rem;",
+      "  color: #495057;",
+      "  background: #ffffff;",
+      "  border: 1px solid #d4dcec;",
+      "  border-radius: 4px;",
+      "}",
+      "",
+      ".activity-admin-help {",
+      "  color: #6c757d;",
+      "  font-size: 0.75rem;",
+      "}",
+      "",
+      ".activity-admin-alert {",
+      "  padding: 0.75rem 1rem;",
+      "  margin-bottom: 1rem;",
+      "  color: #054d9e;",
+      "  background: #e7f1fe;",
+      "  border: 1px solid #b9d4f2;",
+      "  border-radius: 4px;",
+      "}",
+      "",
+      ".activity-admin-alert.is-danger {",
+      "  color: #8d2f10;",
+      "  background: #fcece6;",
+      "  border-color: #f4c2b1;",
+      "}",
+      "",
+      ".activity-admin-loading {",
+      "  padding: 2rem;",
+      "  color: #6c757d;",
+      "  text-align: center;",
+      "}",
+      "",
+      "@media (max-width: 991.98px) {",
+      "  .activity-admin-root {",
+      "    padding: 1rem;",
+      "  }",
+      "",
+      "  .activity-admin-hero,",
+      "  .activity-admin-card-header {",
+      "    flex-direction: column;",
+      "    align-items: stretch;",
+      "  }",
+      "",
+      "  .activity-admin-grid,",
+      "  .activity-admin-form {",
+      "    grid-template-columns: 1fr;",
+      "  }",
+      "}"
+    ].join("\n");
+    document.head.appendChild(style);
+  }
+
+  function securePath() {
+    return String((window.settings && window.settings.secure_path) || "").replace(/^\/+|\/+$/g, "");
+  }
+
+  function apiUrl(path) {
+    return "/api/v1/" + securePath() + path;
+  }
+
+  function authHeader() {
+    return window.localStorage.getItem("authorization") || "";
+  }
+
+  function request(path, options) {
+    var config = options || {};
+    var headers = config.headers || {};
+    headers.Accept = "application/json";
+    if (!(config.body instanceof FormData)) {
+      headers["Content-Type"] = "application/json";
+    }
+    var authorization = authHeader();
+    if (authorization) {
+      headers.authorization = authorization;
+    }
+    config.headers = headers;
+    config.credentials = "include";
+
+    return fetch(apiUrl(path), config).then(function (response) {
+      return response.text().then(function (text) {
+        var payload = {};
+        if (text) {
+          try {
+            payload = JSON.parse(text);
+          } catch (error) {
+            payload = { message: text };
+          }
+        }
+        if (!response.ok) {
+          var message = payload.message || "请求失败";
+          if (payload.errors) {
+            var firstKey = Object.keys(payload.errors)[0];
+            if (firstKey && payload.errors[firstKey] && payload.errors[firstKey][0]) {
+              message = payload.errors[firstKey][0];
+            }
+          }
+          throw new Error(message);
+        }
+        return payload.data;
+      });
+    });
+  }
+
+  function h(tag, attrs, children) {
+    var node = document.createElement(tag);
+    attrs = attrs || {};
+    Object.keys(attrs).forEach(function (key) {
+      if (key === "className") {
+        node.className = attrs[key];
+      } else if (key === "text") {
+        node.textContent = attrs[key];
+      } else if (key === "html") {
+        node.innerHTML = attrs[key];
+      } else if (key.indexOf("on") === 0 && typeof attrs[key] === "function") {
+        node.addEventListener(key.slice(2).toLowerCase(), attrs[key]);
+      } else if (attrs[key] !== false && attrs[key] !== null && typeof attrs[key] !== "undefined") {
+        node.setAttribute(key, attrs[key]);
+      }
+    });
+    (children || []).forEach(function (child) {
+      node.appendChild(typeof child === "string" ? document.createTextNode(child) : child);
+    });
+    return node;
+  }
+
+  function fmtTraffic(bytes) {
+    var value = Number(bytes || 0);
+    if (value >= 1024 * MB) {
+      return (value / (1024 * MB)).toFixed(2) + " GB";
+    }
+    return Math.round(value / MB) + " MB";
+  }
+
+  function fmtReward(row) {
+    if (row.reward_type === "traffic") {
+      return fmtTraffic(row.reward_amount);
+    }
+    var amount = Number(row.reward_amount || 0) / 100;
+    return amount.toFixed(2) + " 元";
+  }
+
+  function currentRoute() {
+    return window.location.hash.replace(/^#\/?/, "");
+  }
+
+  function goto(route) {
+    window.location.hash = route;
+  }
+
+  function toast(message, type) {
+    var el = h("div", {
+      className: "activity-admin-alert" + (type === "danger" ? " is-danger" : ""),
+      text: message
+    });
+    el.style.position = "fixed";
+    el.style.right = "16px";
+    el.style.bottom = "16px";
+    el.style.zIndex = "3000";
+    el.style.maxWidth = "360px";
+    document.body.appendChild(el);
+    setTimeout(function () {
+      el.remove();
+    }, 3500);
+  }
+
+  function findMainContainer() {
+    return document.querySelector("#main-container");
+  }
+
+  function injectMenu() {
+    var nav = document.querySelector("#sidebar .nav-main");
+    if (!nav || document.querySelector("[data-activity-admin-menu]")) {
+      return;
+    }
+
+    nav.appendChild(h("li", {
+      className: "nav-main-heading",
+      text: "运营"
+    }));
+
+    [
+      { title: "签到管理", route: ROUTES.checkin, icon: "si si-calendar" },
+      { title: "抽奖管理", route: ROUTES.lottery, icon: "si si-present" }
+    ].forEach(function (item) {
+      var link = h("a", {
+        className: "nav-main-link",
+        href: "#" + item.route,
+        "data-activity-admin-menu": item.route,
+        onclick: function (event) {
+          event.preventDefault();
+          goto(item.route);
+        }
+      }, [
+        h("i", { className: "nav-main-link-icon " + item.icon }),
+        h("span", { className: "nav-main-link-name", text: item.title })
+      ]);
+      nav.appendChild(h("li", { className: "nav-main-item" }, [link]));
+    });
+  }
+
+  function setActiveMenu(route) {
+    document.querySelectorAll("[data-activity-admin-menu]").forEach(function (link) {
+      link.classList.toggle("active", link.getAttribute("data-activity-admin-menu") === route);
+    });
+  }
+
+  function clearOriginalActiveMenu() {
+    document.querySelectorAll("#sidebar .nav-main-link.active").forEach(function (link) {
+      if (!link.getAttribute("data-activity-admin-menu")) {
+        link.classList.remove("active");
+      }
+    });
+  }
+
+  function shell(title, subtitle, activeRoute) {
+    var root = h("div", { className: "activity-admin-root" });
+    root.appendChild(h("div", { className: "activity-admin-shell" }, [
+      h("div", { className: "activity-admin-hero" }, [
+        h("div", {}, [
+          h("div", { className: "activity-admin-eyebrow", text: "运营活动" }),
+          h("h1", { className: "activity-admin-title", text: title }),
+          h("p", { className: "activity-admin-subtitle", text: subtitle })
+        ]),
+        h("div", { className: "activity-admin-tabs" }, [
+          h("button", {
+            className: "activity-admin-tab" + (activeRoute === ROUTES.checkin ? " is-active" : ""),
+            text: "签到管理",
+            onclick: function () { goto(ROUTES.checkin); }
+          }),
+          h("button", {
+            className: "activity-admin-tab" + (activeRoute === ROUTES.lottery ? " is-active" : ""),
+            text: "抽奖管理",
+            onclick: function () { goto(ROUTES.lottery); }
+          })
+        ])
+      ])
+    ]));
+    return root;
+  }
+
+  function card(title, body, actions) {
+    return h("div", { className: "activity-admin-card" }, [
+      h("div", { className: "activity-admin-card-header" }, [
+        h("h3", { className: "activity-admin-card-title", text: title }),
+        h("div", { className: "activity-admin-actions" }, actions || [])
+      ]),
+      h("div", { className: "activity-admin-card-body" }, [body])
+    ]);
+  }
+
+  function stats(items) {
+    return h("div", { className: "activity-admin-grid" }, items.map(function (item) {
+      return h("div", { className: "activity-admin-stat" }, [
+        h("div", { className: "activity-admin-stat-value", text: String(item.value) }),
+        h("div", { className: "activity-admin-stat-label", text: item.label })
+      ]);
+    }));
+  }
+
+  function table(headers, rows) {
+    return h("div", { className: "activity-admin-table-wrap" }, [
+      h("table", { className: "activity-admin-table" }, [
+        h("thead", {}, [
+          h("tr", {}, headers.map(function (header) {
+            return h("th", { text: header });
+          }))
+        ]),
+        h("tbody", {}, rows.length ? rows : [
+          h("tr", {}, [
+            h("td", { colspan: headers.length, text: "暂无数据" })
+          ])
+        ])
+      ])
+    ]);
+  }
+
+  function badge(text, enabled, type) {
+    return h("span", {
+      className: "activity-admin-badge " + (type || (enabled ? "is-on" : "is-off")),
+      text: text
+    });
+  }
+
+  function modal(title, fields, onSubmit) {
+    var overlay = h("div", { className: "activity-admin-modal is-open" });
+    var form = h("form", { className: "activity-admin-form" });
+
+    fields.forEach(function (field) {
+      var input;
+      if (field.type === "select") {
+        input = h("select", { name: field.name });
+        (field.options || []).forEach(function (option) {
+          input.appendChild(h("option", { value: option.value, text: option.label }));
+        });
+        input.value = field.value == null ? "" : String(field.value);
+      } else {
+        input = h("input", {
+          name: field.name,
+          type: field.type || "text",
+          value: field.value == null ? "" : field.value,
+          step: field.step,
+          min: field.min,
+          max: field.max,
+          placeholder: field.placeholder || ""
+        });
+      }
+      if (field.onchange) {
+        input.addEventListener("change", function () {
+          field.onchange(input.value, form);
+        });
+      }
+      var wrapper = h("div", { className: "activity-admin-field" + (field.wide ? " is-wide" : "") }, [
+        h("label", { text: field.label }),
+        input
+      ]);
+      if (field.help) {
+        wrapper.appendChild(h("div", { className: "activity-admin-help", text: field.help }));
+      }
+      form.appendChild(wrapper);
+    });
+
+    var close = function () {
+      overlay.remove();
+    };
+    form.addEventListener("submit", function (event) {
+      event.preventDefault();
+      var data = {};
+      new FormData(form).forEach(function (value, key) {
+        data[key] = value;
+      });
+      onSubmit(data, close);
+    });
+
+    overlay.appendChild(h("div", { className: "activity-admin-dialog" }, [
+      h("div", { className: "activity-admin-dialog-header" }, [
+        h("h3", { className: "activity-admin-dialog-title", text: title })
+      ]),
+      form,
+      h("div", { className: "activity-admin-dialog-footer" }, [
+        h("div", { className: "activity-admin-form-actions" }, [
+          h("button", { className: "activity-admin-button", type: "button", text: "取消", onclick: close }),
+          h("button", { className: "activity-admin-button is-primary", type: "button", text: "保存", onclick: function () {
+            if (form.requestSubmit) {
+              form.requestSubmit();
+            } else {
+              form.dispatchEvent(new Event("submit", { cancelable: true }));
+            }
+          } })
+        ])
+      ])
+    ]));
+    document.body.appendChild(overlay);
+  }
+
+  function renderLoading(root) {
+    root.appendChild(h("div", { className: "activity-admin-loading", text: "正在加载..." }));
+  }
+
+  function renderCheckin() {
+    var main = findMainContainer();
+    if (!main) return;
+    main.innerHTML = "";
+    var root = shell("签到配置管理", "签到奖励规则与套餐配置。", ROUTES.checkin);
+    main.appendChild(root);
+    renderLoading(root);
+
+    Promise.all([
+      request("/checkin/configs"),
+      request("/checkin/plans"),
+      request("/checkin/stats").catch(function () { return null; })
+    ]).then(function (result) {
+      var configs = result[0] || [];
+      var plans = result[1] || [];
+      var statData = result[2] || {};
+      root.innerHTML = "";
+      root.appendChild(shell("签到配置管理", "签到奖励规则与套餐配置。", ROUTES.checkin).firstChild);
+      root.appendChild(stats([
+        { label: "配置总数", value: configs.length },
+        { label: "启用配置", value: configs.filter(function (item) { return item.enabled; }).length },
+        { label: "今日签到", value: (statData.total_stats && statData.total_stats.today_checkins) || 0 },
+        { label: "累计签到", value: (statData.total_stats && statData.total_stats.total_checkins) || 0 }
+      ]));
+
+      root.appendChild(card("配置列表", table([
+        "ID", "套餐", "奖励模式", "每日奖励", "连续奖励", "状态", "操作"
+      ], configs.map(function (item) {
+        return h("tr", {}, [
+          h("td", { text: item.id }),
+          h("td", { text: item.plan_name || "默认配置" }),
+          h("td", {}, [badge(item.reward_mode === "random" ? "随机" : "固定", true, "is-info")]),
+          h("td", { text: item.reward_mode === "random" ? fmtTraffic(item.min_traffic) + " - " + fmtTraffic(item.max_traffic) : fmtTraffic(item.daily_traffic) }),
+          h("td", { text: item.reward_mode === "random" ? "无" : (Number(item.consecutive_days || 0) + " 天 / " + fmtTraffic(item.consecutive_bonus)) }),
+          h("td", {}, [badge(item.enabled ? "启用" : "禁用", item.enabled)]),
+          h("td", {}, [
+            h("div", { className: "activity-admin-row-actions" }, [
+              h("button", { className: "activity-admin-button", text: "编辑", onclick: function () { openCheckinForm(item, plans); } }),
+              h("button", { className: "activity-admin-button is-danger", text: "删除", onclick: function () { deleteCheckin(item.id); } })
+            ])
+          ])
+        ]);
+      })), [
+        h("button", { className: "activity-admin-button is-primary", text: "新增配置", onclick: function () { openCheckinForm(null, plans); } }),
+        h("button", { className: "activity-admin-button", text: "刷新", onclick: renderCheckin })
+      ]));
+    }).catch(function (error) {
+      root.innerHTML = "";
+      root.appendChild(h("div", { className: "activity-admin-alert is-danger", text: error.message }));
+    });
+  }
+
+  function openCheckinForm(item, plans) {
+    var planOptions = [{ label: "默认配置", value: "" }].concat((plans || []).map(function (plan) {
+      return { label: plan.name, value: plan.id };
+    }));
+    var isRandom = item && item.reward_mode === "random";
+    modal(item ? "编辑签到配置" : "新增签到配置", [
+      { label: "套餐", name: "plan_id", type: "select", value: item && item.plan_id, options: planOptions, wide: true },
+      { label: "奖励模式", name: "reward_mode", type: "select", value: item ? item.reward_mode : "fixed", options: [
+        { label: "固定奖励", value: "fixed" },
+        { label: "随机奖励", value: "random" }
+      ] },
+      { label: "每日奖励", name: "daily_traffic_mb", type: "number", min: 0, step: 10, value: isRandom ? 0 : Math.round(Number(item && item.daily_traffic || 0) / MB), help: "固定模式使用，单位 MB。" },
+      { label: "最小奖励", name: "min_traffic_mb", type: "number", min: 0, step: 10, value: isRandom ? Math.round(Number(item.min_traffic || 0) / MB) : 0, help: "随机模式使用，单位 MB。" },
+      { label: "最大奖励", name: "max_traffic_mb", type: "number", min: 0, step: 10, value: isRandom ? Math.round(Number(item.max_traffic || 0) / MB) : 0, help: "随机模式使用，单位 MB。" },
+      { label: "连续天数", name: "consecutive_days", type: "number", min: 0, step: 1, value: item ? item.consecutive_days : 7 },
+      { label: "连续奖励", name: "consecutive_bonus_mb", type: "number", min: 0, step: 10, value: item ? Math.round(Number(item.consecutive_bonus || 0) / MB) : 0, help: "固定模式使用，单位 MB。" },
+      { label: "状态", name: "enabled", type: "select", value: item && item.enabled === false ? "0" : "1", options: [
+        { label: "启用", value: "1" },
+        { label: "禁用", value: "0" }
+      ] }
+    ], function (data, close) {
+      var payload = {
+        plan_id: data.plan_id ? Number(data.plan_id) : null,
+        reward_mode: data.reward_mode,
+        enabled: data.enabled === "1"
+      };
+      if (data.reward_mode === "random") {
+        payload.min_traffic = Number(data.min_traffic_mb || 0) * MB;
+        payload.max_traffic = Number(data.max_traffic_mb || 0) * MB;
+        payload.consecutive_bonus = 0;
+        payload.consecutive_days = 0;
+      } else {
+        payload.daily_traffic = Number(data.daily_traffic_mb || 0) * MB;
+        payload.consecutive_bonus = Number(data.consecutive_bonus_mb || 0) * MB;
+        payload.consecutive_days = Number(data.consecutive_days || 0);
+      }
+      request("/checkin/saveConfig", {
+        method: "POST",
+        body: JSON.stringify(payload)
+      }).then(function (response) {
+        if (response && response.success === false) {
+          throw new Error(response.message || "保存失败");
+        }
+        close();
+        toast("签到配置已保存");
+        renderCheckin();
+      }).catch(function (error) {
+        toast(error.message, "danger");
+      });
+    });
+  }
+
+  function deleteCheckin(id) {
+    if (!window.confirm("确定删除这个签到配置吗？")) return;
+    request("/checkin/deleteConfig", {
+      method: "POST",
+      body: JSON.stringify({ id: id })
+    }).then(function (response) {
+      if (response && response.success === false) {
+        throw new Error(response.message || "删除失败");
+      }
+      toast("签到配置已删除");
+      renderCheckin();
+    }).catch(function (error) {
+      toast(error.message, "danger");
+    });
+  }
+
+  function renderLottery() {
+    var main = findMainContainer();
+    if (!main) return;
+    main.innerHTML = "";
+    var root = shell("抽奖配置管理", "抽奖活动规则与执行控制。", ROUTES.lottery);
+    main.appendChild(root);
+    renderLoading(root);
+
+    Promise.all([
+      request("/lottery/configs"),
+      request("/lottery/statistics").catch(function () { return {}; })
+    ]).then(function (result) {
+      var configs = result[0] || [];
+      var statData = result[1] || {};
+      root.innerHTML = "";
+      root.appendChild(shell("抽奖配置管理", "抽奖活动规则与执行控制。", ROUTES.lottery).firstChild);
+      root.appendChild(stats([
+        { label: "配置总数", value: statData.total_configs || configs.length },
+        { label: "启用配置", value: statData.enabled_configs || configs.filter(function (item) { return item.status; }).length },
+        { label: "今日抽奖", value: statData.today_lotteries || 0 },
+        { label: "今日中奖", value: statData.today_winners || 0 }
+      ]));
+
+      root.appendChild(card("配置列表", table([
+        "ID", "活动名称", "状态", "开始时间", "每日次数", "中奖人数", "奖励", "冷却", "TG", "操作"
+      ], configs.map(function (item) {
+        return h("tr", {}, [
+          h("td", { text: item.id }),
+          h("td", { text: item.name }),
+          h("td", {}, [badge(item.status ? "启用" : "禁用", item.status)]),
+          h("td", { text: item.start_time || "-" }),
+          h("td", { text: Number(item.frequency || 0) + " 次" }),
+          h("td", { text: Number(item.winner_count || 0) + " 人" }),
+          h("td", { text: fmtReward(item) }),
+          h("td", { text: Number(item.cooldown_rounds || 0) + " 轮" }),
+          h("td", {}, [badge(item.telegram_enabled ? "启用" : "关闭", item.telegram_enabled)]),
+          h("td", {}, [
+            h("div", { className: "activity-admin-row-actions" }, [
+              h("button", { className: "activity-admin-button", text: "编辑", onclick: function () { openLotteryForm(item); } }),
+              h("button", { className: "activity-admin-button is-success", text: "执行", onclick: function () { executeLottery(item); } }),
+              h("button", { className: "activity-admin-button is-danger", text: "删除", onclick: function () { deleteLottery(item.id); } })
+            ])
+          ])
+        ]);
+      })), [
+        h("button", { className: "activity-admin-button is-primary", text: "新增配置", onclick: function () { openLotteryForm(null); } }),
+        h("button", { className: "activity-admin-button", text: "刷新", onclick: renderLottery })
+      ]));
+    }).catch(function (error) {
+      root.innerHTML = "";
+      root.appendChild(h("div", { className: "activity-admin-alert is-danger", text: error.message }));
+    });
+  }
+
+  function openLotteryForm(item) {
+    modal(item ? "编辑抽奖配置" : "新增抽奖配置", [
+      { label: "活动名称", name: "name", value: item ? item.name : "", wide: true },
+      { label: "状态", name: "status", type: "select", value: item && !item.status ? "0" : "1", options: [
+        { label: "启用", value: "1" },
+        { label: "禁用", value: "0" }
+      ] },
+      { label: "开始时间", name: "start_time", type: "time", value: item ? String(item.start_time || "10:00").slice(0, 5) : "10:00" },
+      { label: "每日次数", name: "frequency", type: "number", min: 1, max: 1440, value: item ? item.frequency : 1 },
+      { label: "中奖人数", name: "winner_count", type: "number", min: 1, max: 100, value: item ? item.winner_count : 1 },
+      { label: "奖励类型", name: "reward_type", type: "select", value: item ? item.reward_type : "balance", options: [
+        { label: "余额", value: "balance" },
+        { label: "流量", value: "traffic" }
+      ] },
+      { label: "奖励数量", name: "reward_amount", type: "number", min: 0.01, step: 0.01, value: item ? (item.reward_type === "traffic" ? Math.round(Number(item.reward_amount || 0) / MB) : (Number(item.reward_amount || 0) / 100).toFixed(2)) : 1, help: "余额单位为元，流量单位为 MB。" },
+      { label: "冷却轮次", name: "cooldown_rounds", type: "number", min: 0, max: 365, value: item ? item.cooldown_rounds : 7 },
+      { label: "TG 通知", name: "telegram_enabled", type: "select", value: item && item.telegram_enabled ? "1" : "0", options: [
+        { label: "关闭", value: "0" },
+        { label: "启用", value: "1" }
+      ] },
+      { label: "机器人 Token", name: "telegram_bot_token", type: "password", value: item ? item.telegram_bot_token || "" : "", wide: true },
+      { label: "群组 ID", name: "telegram_chat_id", value: item ? item.telegram_chat_id || "" : "", wide: true }
+    ], function (data, close) {
+      var payload = {
+        name: String(data.name || "").trim(),
+        status: data.status === "1",
+        start_time: data.start_time || "10:00",
+        frequency: Number(data.frequency || 1),
+        winner_count: Number(data.winner_count || 1),
+        reward_type: data.reward_type,
+        reward_amount: data.reward_type === "traffic" ? Number(data.reward_amount || 0) * MB : Number(data.reward_amount || 0),
+        cooldown_rounds: Number(data.cooldown_rounds || 0),
+        telegram_enabled: data.telegram_enabled === "1",
+        telegram_bot_token: data.telegram_bot_token || "",
+        telegram_chat_id: data.telegram_chat_id || ""
+      };
+      if (!payload.name) {
+        toast("请输入活动名称", "danger");
+        return;
+      }
+      request(item ? "/lottery/configs/" + item.id : "/lottery/configs", {
+        method: item ? "PUT" : "POST",
+        body: JSON.stringify(payload)
+      }).then(function () {
+        close();
+        toast("抽奖配置已保存");
+        renderLottery();
+      }).catch(function (error) {
+        toast(error.message, "danger");
+      });
+    });
+  }
+
+  function executeLottery(item) {
+    if (!window.confirm("确定现在手动执行「" + item.name + "」吗？")) return;
+    request("/lottery/execute/" + item.id, {
+      method: "POST",
+      body: JSON.stringify({})
+    }).then(function (result) {
+      toast("抽奖执行成功，参与 " + (result.participants || 0) + " 人，中奖 " + (result.winners || 0) + " 人");
+      renderLottery();
+    }).catch(function (error) {
+      toast(error.message, "danger");
+    });
+  }
+
+  function deleteLottery(id) {
+    if (!window.confirm("确定删除这个抽奖配置吗？已有记录的配置后端会拒绝删除。")) return;
+    request("/lottery/configs/" + id, {
+      method: "DELETE"
+    }).then(function () {
+      toast("抽奖配置已删除");
+      renderLottery();
+    }).catch(function (error) {
+      toast(error.message, "danger");
+    });
+  }
+
+  function renderRoute() {
+    injectStyle();
+    injectMenu();
+    var route = currentRoute();
+    if (route !== ROUTES.checkin && route !== ROUTES.lottery) {
+      return;
+    }
+    clearOriginalActiveMenu();
+    setActiveMenu(route);
+    if (route === ROUTES.checkin) {
+      renderCheckin();
+    } else {
+      renderLottery();
+    }
+  }
+
+  function boot() {
+    injectStyle();
+    injectMenu();
+    renderRoute();
+    window.addEventListener("hashchange", renderRoute);
+    var observer = new MutationObserver(function () {
+      injectMenu();
+      var route = currentRoute();
+      if ((route === ROUTES.checkin || route === ROUTES.lottery) && !document.querySelector("#main-container .activity-admin-root")) {
+        window.setTimeout(renderRoute, 0);
+        return;
+      }
+      setActiveMenu(route);
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot);
+  } else {
+    boot();
+  }
+})();
