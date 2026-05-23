@@ -115949,6 +115949,10 @@
     return amount.toFixed(2) + " 元";
   }
 
+  function isEnabled(value) {
+    return value === true || value === 1 || value === "1";
+  }
+
   function currentRoute() {
     var hash = window.location.hash.replace(/^#\/?/, "");
     var queryIndex = hash.indexOf("?");
@@ -116210,7 +116214,7 @@
       root.appendChild(shell("签到配置管理", "签到奖励规则与套餐配置。", ROUTES.checkin).firstChild);
       root.appendChild(stats([
         { label: "配置总数", value: configs.length },
-        { label: "启用配置", value: configs.filter(function (item) { return item.enabled; }).length },
+        { label: "启用配置", value: configs.filter(function (item) { return isEnabled(item.enabled); }).length },
         { label: "今日签到", value: (statData.total_stats && statData.total_stats.today_checkins) || 0 },
         { label: "累计签到", value: (statData.total_stats && statData.total_stats.total_checkins) || 0 }
       ]));
@@ -116224,7 +116228,7 @@
           h("td", {}, [badge(item.reward_mode === "random" ? "随机" : "固定", true, "is-info")]),
           h("td", { text: item.reward_mode === "random" ? fmtTraffic(item.min_traffic) + " - " + fmtTraffic(item.max_traffic) : fmtTraffic(item.daily_traffic) }),
           h("td", { text: item.reward_mode === "random" ? "无" : (Number(item.consecutive_days || 0) + " 天 / " + fmtTraffic(item.consecutive_bonus)) }),
-          h("td", {}, [badge(item.enabled ? "启用" : "禁用", item.enabled)]),
+          h("td", {}, [badge(isEnabled(item.enabled) ? "启用" : "禁用", isEnabled(item.enabled))]),
           h("td", {}, [
             h("div", { className: "activity-admin-row-actions" }, [
               h("button", { className: "activity-admin-button", text: "编辑", onclick: function () { openCheckinForm(item, plans); } }),
@@ -116258,7 +116262,7 @@
       { label: "最大奖励", name: "max_traffic_mb", type: "number", min: 0, step: 10, value: isRandom ? Math.round(Number(item.max_traffic || 0) / MB) : 0, help: "随机模式使用，单位 MB。" },
       { label: "连续天数", name: "consecutive_days", type: "number", min: 0, step: 1, value: item ? item.consecutive_days : 7 },
       { label: "连续奖励", name: "consecutive_bonus_mb", type: "number", min: 0, step: 10, value: item ? Math.round(Number(item.consecutive_bonus || 0) / MB) : 0, help: "固定模式使用，单位 MB。" },
-      { label: "状态", name: "enabled", type: "select", value: item && item.enabled === false ? "0" : "1", options: [
+      { label: "状态", name: "enabled", type: "select", value: item && !isEnabled(item.enabled) ? "0" : "1", options: [
         { label: "启用", value: "1" },
         { label: "禁用", value: "0" }
       ] }
@@ -116328,7 +116332,7 @@
       root.appendChild(shell("抽奖配置管理", "抽奖活动规则与执行控制。", ROUTES.lottery).firstChild);
       root.appendChild(stats([
         { label: "配置总数", value: statData.total_configs || configs.length },
-        { label: "启用配置", value: statData.enabled_configs || configs.filter(function (item) { return item.status; }).length },
+        { label: "启用配置", value: typeof statData.enabled_configs === "undefined" ? configs.filter(function (item) { return isEnabled(item.status); }).length : statData.enabled_configs },
         { label: "今日抽奖", value: statData.today_lotteries || 0 },
         { label: "今日中奖", value: statData.today_winners || 0 }
       ]));
@@ -116339,13 +116343,13 @@
         return h("tr", {}, [
           h("td", { text: item.id }),
           h("td", { text: item.name }),
-          h("td", {}, [badge(item.status ? "启用" : "禁用", item.status)]),
+          h("td", {}, [badge(isEnabled(item.status) ? "启用" : "禁用", isEnabled(item.status))]),
           h("td", { text: item.start_time || "-" }),
           h("td", { text: Number(item.frequency || 0) + " 次" }),
           h("td", { text: Number(item.winner_count || 0) + " 人" }),
           h("td", { text: fmtReward(item) }),
           h("td", { text: Number(item.cooldown_rounds || 0) + " 轮" }),
-          h("td", {}, [badge(item.telegram_enabled ? "启用" : "关闭", item.telegram_enabled)]),
+          h("td", {}, [badge(isEnabled(item.telegram_enabled) ? "启用" : "关闭", isEnabled(item.telegram_enabled))]),
           h("td", {}, [
             h("div", { className: "activity-admin-row-actions" }, [
               h("button", { className: "activity-admin-button", text: "编辑", onclick: function () { openLotteryForm(item); } }),
@@ -116367,7 +116371,7 @@
   function openLotteryForm(item) {
     modal(item ? "编辑抽奖配置" : "新增抽奖配置", [
       { label: "活动名称", name: "name", value: item ? item.name : "", wide: true },
-      { label: "状态", name: "status", type: "select", value: item && !item.status ? "0" : "1", options: [
+      { label: "状态", name: "status", type: "select", value: item && !isEnabled(item.status) ? "0" : "1", options: [
         { label: "启用", value: "1" },
         { label: "禁用", value: "0" }
       ] },
@@ -116380,7 +116384,7 @@
       ] },
       { label: "奖励数量", name: "reward_amount", type: "number", min: 0.01, step: 0.01, value: item ? (item.reward_type === "traffic" ? Math.round(Number(item.reward_amount || 0) / MB) : (Number(item.reward_amount || 0) / 100).toFixed(2)) : 1, help: "余额单位为元，流量单位为 MB。" },
       { label: "冷却轮次", name: "cooldown_rounds", type: "number", min: 0, max: 365, value: item ? item.cooldown_rounds : 7 },
-      { label: "TG 通知", name: "telegram_enabled", type: "select", value: item && item.telegram_enabled ? "1" : "0", options: [
+      { label: "TG 通知", name: "telegram_enabled", type: "select", value: item && isEnabled(item.telegram_enabled) ? "1" : "0", options: [
         { label: "关闭", value: "0" },
         { label: "启用", value: "1" }
       ] },

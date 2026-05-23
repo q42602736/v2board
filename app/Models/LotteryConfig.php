@@ -9,6 +9,10 @@ class LotteryConfig extends Model
     protected $table = 'v2_lottery_config';
     protected $guarded = ['id'];
     public $timestamps = false;
+    protected $casts = [
+        'status' => 'boolean',
+        'telegram_enabled' => 'boolean',
+    ];
 
     protected $appends = [
         'reward_amount_formatted',
