@@ -39,6 +39,7 @@ class TrafficRateController extends Controller
                     'days_of_week' => $config->days_of_week,
                     'target_rate' => (float) $config->target_rate,
                     'node_filter' => $config->node_filter,
+                    'node_ids' => $config->node_ids ?: [],
                     'node_filter_desc' => $this->getNodeFilterDescription($config),
                     'backup_enabled' => (bool) $config->backup_enabled,
                     'auto_restore' => (bool) $config->auto_restore,

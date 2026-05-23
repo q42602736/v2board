@@ -115516,7 +115516,9 @@
 
   var ROUTES = {
     checkin: "activity/checkin",
-    lottery: "activity/lottery"
+    lottery: "activity/lottery",
+    trafficRate: "activity/traffic-rate",
+    autoSpeedlimit: "activity/auto-speedlimit"
   };
   var DASHBOARD_ROUTE = "dashboard";
   var MB = 1024 * 1024;
@@ -115609,6 +115611,17 @@
       "  color: #ffffff;",
       "  background: #0665d0;",
       "  border-color: #0665d0;",
+      "}",
+      "",
+      "body.v2board-activity-admin-active #sidebar .nav-main-link.active:not([data-activity-admin-menu]),",
+      "body.v2board-activity-admin-active #sidebar .nav-main-item.active > .nav-main-link:not([data-activity-admin-menu]) {",
+      "  color: #6c757d;",
+      "  background: transparent;",
+      "}",
+      "",
+      "body.v2board-activity-admin-active #sidebar .nav-main-link.active:not([data-activity-admin-menu]) .nav-main-link-icon,",
+      "body.v2board-activity-admin-active #sidebar .nav-main-item.active > .nav-main-link:not([data-activity-admin-menu]) .nav-main-link-icon {",
+      "  color: #6c757d;",
       "}",
       "",
       ".activity-admin-button.is-danger {",
@@ -115804,7 +115817,8 @@
       "}",
       "",
       ".activity-admin-field input,",
-      ".activity-admin-field select {",
+      ".activity-admin-field select,",
+      ".activity-admin-field textarea {",
       "  width: 100%;",
       "  min-height: 2.375rem;",
       "  padding: 0.375rem 0.625rem;",
@@ -115812,6 +115826,15 @@
       "  background: #ffffff;",
       "  border: 1px solid #d4dcec;",
       "  border-radius: 4px;",
+      "}",
+      "",
+      ".activity-admin-field textarea {",
+      "  min-height: 5.5rem;",
+      "  resize: vertical;",
+      "}",
+      "",
+      ".activity-admin-field select[multiple] {",
+      "  min-height: 10rem;",
       "}",
       "",
       ".activity-admin-help {",
@@ -115873,6 +115896,15 @@
   }
 
   function request(path, options) {
+    return requestRaw(path, options).then(function (payload) {
+      if (payload && Object.prototype.hasOwnProperty.call(payload, "data")) {
+        return payload.data;
+      }
+      return payload;
+    });
+  }
+
+  function requestRaw(path, options) {
     var config = options || {};
     var headers = config.headers || {};
     headers.Accept = "application/json";
@@ -115900,13 +115932,17 @@
           var message = payload.message || "请求失败";
           if (payload.errors) {
             var firstKey = Object.keys(payload.errors)[0];
-            if (firstKey && payload.errors[firstKey] && payload.errors[firstKey][0]) {
-              message = payload.errors[firstKey][0];
+            if (firstKey && payload.errors[firstKey]) {
+              if (Array.isArray(payload.errors[firstKey]) && payload.errors[firstKey][0]) {
+                message = payload.errors[firstKey][0];
+              } else if (typeof payload.errors[firstKey] === "string") {
+                message = payload.errors[firstKey];
+              }
             }
           }
           throw new Error(message);
         }
-        return payload.data;
+        return payload;
       });
     });
   }
@@ -115949,6 +115985,107 @@
     return amount.toFixed(2) + " 元";
   }
 
+  function normalizeTime(value, fallback) {
+    var raw = String(value || fallback || "00:00:00");
+    if (/^\d{2}:\d{2}$/.test(raw)) {
+      return raw + ":00";
+    }
+    if (/^\d{2}:\d{2}:\d{2}$/.test(raw)) {
+      return raw;
+    }
+    return fallback || "00:00:00";
+  }
+
+  function unwrapPageData(payload) {
+    if (!payload) return [];
+    if (Array.isArray(payload)) return payload;
+    if (Array.isArray(payload.data)) return payload.data;
+    return [];
+  }
+
+  function unwrapPageTotal(payload) {
+    if (!payload) return 0;
+    if (typeof payload.total !== "undefined") return payload.total;
+    if (typeof payload.itemCount !== "undefined") return payload.itemCount;
+    var data = unwrapPageData(payload);
+    return data.length;
+  }
+
+  function fmtPercent(value) {
+    if (value === null || typeof value === "undefined" || value === "") return "-";
+    return Number(value || 0).toFixed(2).replace(/\.00$/, "") + "%";
+  }
+
+  function fmtSpeed(value) {
+    if (!value) return "不限速";
+    return Number(value) + " Mbps";
+  }
+
+  function dayText(value) {
+    if (!value) return "每天";
+    var names = { "1": "周一", "2": "周二", "3": "周三", "4": "周四", "5": "周五", "6": "周六", "7": "周日" };
+    return String(value).split(",").filter(Boolean).map(function (day) {
+      return names[day] || day;
+    }).join("、") || "每天";
+  }
+
+  function nodeValue(node) {
+    return String(node.server_type || "") + "#" + String(node.id || node.server_id || "");
+  }
+
+  function parseNodeValues(values) {
+    if (values && !Array.isArray(values)) {
+      values = [values];
+    }
+    return (values || []).map(function (value) {
+      var parts = String(value).split("#");
+      return {
+        server_type: parts[0],
+        server_id: Number(parts[1] || 0)
+      };
+    }).filter(function (item) {
+      return item.server_type && item.server_id;
+    });
+  }
+
+  function trafficRatePayload(data) {
+    var selectedNodes = parseNodeValues(data.node_ids_values || []);
+    var payload = {
+      name: String(data.name || "").trim(),
+      status: data.status === "1",
+      start_time: normalizeTime(data.start_time, "09:00:00"),
+      end_time: normalizeTime(data.end_time, "18:00:00"),
+      days_of_week: String(data.days_of_week || "").replace(/\s+/g, "").trim() || "1,2,3,4,5,6,7",
+      target_rate: Number(data.target_rate || 1),
+      node_filter: data.node_filter || "all",
+      backup_enabled: data.backup_enabled === "1",
+      auto_restore: data.auto_restore === "1",
+      description: String(data.description || "").trim(),
+      telegram_notify_enabled: data.telegram_notify_enabled === "1"
+    };
+    if (payload.node_filter === "all") {
+      payload.node_ids = [];
+    } else {
+      payload.node_ids = selectedNodes;
+    }
+    return payload;
+  }
+
+  function autoSpeedlimitPayload(data) {
+    var payload = {
+      enable: data.enable === "1",
+      traffic_mode: data.traffic_mode || "daily",
+      daily_calc_mode: data.daily_calc_mode || "total"
+    };
+    for (var index = 1; index <= 5; index++) {
+      var threshold = data["threshold_" + index];
+      var speed = data["speed_" + index];
+      payload["threshold_" + index] = threshold === "" || threshold === null || typeof threshold === "undefined" ? null : Number(threshold);
+      payload["speed_" + index] = speed === "" || speed === null || typeof speed === "undefined" ? null : Number(speed);
+    }
+    return payload;
+  }
+
   function isEnabled(value) {
     return value === true || value === 1 || value === "1";
   }
@@ -115958,31 +116095,49 @@
     var queryIndex = hash.indexOf("?");
     var path = queryIndex === -1 ? hash : hash.slice(0, queryIndex);
     var query = queryIndex === -1 ? "" : hash.slice(queryIndex + 1);
-    var activityMatch = query.match(/(?:^|&)activity=(checkin|lottery)(?:&|$)/);
+    var activityMatch = query.match(/(?:^|&)activity=(checkin|lottery|traffic-rate|auto-speedlimit)(?:&|$)/);
     if (path === DASHBOARD_ROUTE && activityMatch) {
-      return ROUTES[activityMatch[1]];
+      return routeByActivity(activityMatch[1]);
     }
     return path;
   }
 
+  function routeByActivity(activity) {
+    if (activity === "lottery") return ROUTES.lottery;
+    if (activity === "traffic-rate") return ROUTES.trafficRate;
+    if (activity === "auto-speedlimit") return ROUTES.autoSpeedlimit;
+    return ROUTES.checkin;
+  }
+
+  function activityByRoute(route) {
+    if (route === ROUTES.lottery) return "lottery";
+    if (route === ROUTES.trafficRate) return "traffic-rate";
+    if (route === ROUTES.autoSpeedlimit) return "auto-speedlimit";
+    return "checkin";
+  }
+
   function goto(route) {
-    var activity = route === ROUTES.lottery ? "lottery" : "checkin";
-    window.location.hash = "/" + DASHBOARD_ROUTE + "?activity=" + activity;
+    window.location.hash = "/" + DASHBOARD_ROUTE + "?activity=" + activityByRoute(route);
   }
 
   function routeHref(route) {
-    var activity = route === ROUTES.lottery ? "lottery" : "checkin";
-    return "#/" + DASHBOARD_ROUTE + "?activity=" + activity;
+    return "#/" + DASHBOARD_ROUTE + "?activity=" + activityByRoute(route);
   }
 
   function normalizeActivityRoute() {
     var route = window.location.hash.replace(/^#\/?/, "").split("?")[0];
-    if (route !== ROUTES.checkin && route !== ROUTES.lottery) {
+    if (!isActivityRoute(route)) {
       return false;
     }
-    var activity = route === ROUTES.lottery ? "lottery" : "checkin";
-    window.location.replace("#/" + DASHBOARD_ROUTE + "?activity=" + activity);
+    window.location.replace("#/" + DASHBOARD_ROUTE + "?activity=" + activityByRoute(route));
     return true;
+  }
+
+  function isActivityRoute(route) {
+    return route === ROUTES.checkin ||
+      route === ROUTES.lottery ||
+      route === ROUTES.trafficRate ||
+      route === ROUTES.autoSpeedlimit;
   }
 
   function toast(message, type) {
@@ -116018,7 +116173,9 @@
 
     [
       { title: "签到管理", route: ROUTES.checkin, icon: "si si-calendar" },
-      { title: "抽奖管理", route: ROUTES.lottery, icon: "si si-present" }
+      { title: "抽奖管理", route: ROUTES.lottery, icon: "si si-present" },
+      { title: "流量倍率", route: ROUTES.trafficRate, icon: "si si-graph" },
+      { title: "自动限速", route: ROUTES.autoSpeedlimit, icon: "si si-speedometer" }
     ].forEach(function (item) {
       var link = h("a", {
         className: "nav-main-link",
@@ -116038,7 +116195,12 @@
 
   function setActiveMenu(route) {
     document.querySelectorAll("[data-activity-admin-menu]").forEach(function (link) {
-      link.classList.toggle("active", link.getAttribute("data-activity-admin-menu") === route);
+      var active = link.getAttribute("data-activity-admin-menu") === route;
+      link.classList.toggle("active", active);
+      var item = link.closest && link.closest(".nav-main-item");
+      if (item) {
+        item.classList.toggle("active", active);
+      }
     });
   }
 
@@ -116048,9 +116210,45 @@
         link.classList.remove("active");
       }
     });
+    document.querySelectorAll("#sidebar .nav-main-item.active").forEach(function (item) {
+      if (!item.querySelector("[data-activity-admin-menu]")) {
+        item.classList.remove("active");
+      }
+    });
+  }
+
+  function hasActivityRoot() {
+    return !!document.querySelector("#main-container .activity-admin-root");
+  }
+
+  function leaveActivityRoute(targetHash) {
+    if (!hasActivityRoot()) return;
+    if (targetHash && window.location.hash !== targetHash) {
+      window.location.hash = targetHash.replace(/^#?/, "#");
+    }
+    window.setTimeout(function () {
+      window.location.reload();
+    }, 30);
+  }
+
+  function handleSidebarNavigation(event) {
+    if (!isActivityRoute(currentRoute())) return;
+    var link = event.target && event.target.closest && event.target.closest("#sidebar .nav-main-link");
+    if (!link || link.getAttribute("data-activity-admin-menu")) return;
+    var href = link.getAttribute("href") || "";
+    if (href.indexOf("#/") !== 0) return;
+    event.preventDefault();
+    event.stopPropagation();
+    leaveActivityRoute(href);
   }
 
   function shell(title, subtitle, activeRoute) {
+    var tabs = [
+      { title: "签到管理", route: ROUTES.checkin },
+      { title: "抽奖管理", route: ROUTES.lottery },
+      { title: "流量倍率", route: ROUTES.trafficRate },
+      { title: "自动限速", route: ROUTES.autoSpeedlimit }
+    ];
     var root = h("div", { className: "activity-admin-root" });
     root.appendChild(h("div", { className: "activity-admin-shell" }, [
       h("div", { className: "activity-admin-hero" }, [
@@ -116059,18 +116257,13 @@
           h("h1", { className: "activity-admin-title", text: title }),
           h("p", { className: "activity-admin-subtitle", text: subtitle })
         ]),
-        h("div", { className: "activity-admin-tabs" }, [
-          h("button", {
-            className: "activity-admin-tab" + (activeRoute === ROUTES.checkin ? " is-active" : ""),
-            text: "签到管理",
-            onclick: function () { goto(ROUTES.checkin); }
-          }),
-          h("button", {
-            className: "activity-admin-tab" + (activeRoute === ROUTES.lottery ? " is-active" : ""),
-            text: "抽奖管理",
-            onclick: function () { goto(ROUTES.lottery); }
-          })
-        ])
+        h("div", { className: "activity-admin-tabs" }, tabs.map(function (tab) {
+          return h("button", {
+            className: "activity-admin-tab" + (activeRoute === tab.route ? " is-active" : ""),
+            text: tab.title,
+            onclick: function () { goto(tab.route); }
+          });
+        }))
       ])
     ]));
     return root;
@@ -116126,11 +116319,24 @@
     fields.forEach(function (field) {
       var input;
       if (field.type === "select") {
-        input = h("select", { name: field.name });
+        input = h("select", { name: field.name, multiple: field.multiple ? "multiple" : false });
         (field.options || []).forEach(function (option) {
           input.appendChild(h("option", { value: option.value, text: option.label }));
         });
-        input.value = field.value == null ? "" : String(field.value);
+        if (field.multiple) {
+          var selectedValues = (field.value || []).map(String);
+          Array.prototype.forEach.call(input.options, function (option) {
+            option.selected = selectedValues.indexOf(String(option.value)) !== -1;
+          });
+        } else {
+          input.value = field.value == null ? "" : String(field.value);
+        }
+      } else if (field.type === "textarea") {
+        input = h("textarea", {
+          name: field.name,
+          placeholder: field.placeholder || ""
+        });
+        input.value = field.value == null ? "" : field.value;
       } else {
         input = h("input", {
           name: field.name,
@@ -116164,7 +116370,12 @@
       event.preventDefault();
       var data = {};
       new FormData(form).forEach(function (value, key) {
-        data[key] = value;
+        if (data[key]) {
+          if (!Array.isArray(data[key])) data[key] = [data[key]];
+          data[key].push(value);
+        } else {
+          data[key] = value;
+        }
       });
       onSubmit(data, close);
     });
@@ -116446,6 +116657,485 @@
     });
   }
 
+  function fmtDate(value) {
+    if (!value) return "-";
+    if (typeof value === "number") {
+      return new Date(value * 1000).toLocaleString("zh-CN");
+    }
+    return String(value);
+  }
+
+  function trafficModeText(value) {
+    if (value === "total") return "总流量";
+    if (value === "both") return "双重检查";
+    return "当日流量";
+  }
+
+  function dailyCalcText(value) {
+    if (value === "remaining") return "基于剩余流量";
+    return "基于总配额";
+  }
+
+  function renderTrafficRate() {
+    var main = findMainContainer();
+    if (!main) return;
+    main.innerHTML = "";
+    var root = shell("流量倍率管理", "按时间段自动调整节点倍率，可指定节点范围并自动恢复。", ROUTES.trafficRate);
+    main.appendChild(root);
+    renderLoading(root);
+
+    Promise.all([
+      request("/traffic-rate/configs"),
+      request("/traffic-rate/stats").catch(function () { return {}; }),
+      request("/traffic-rate/logs?limit=30").catch(function () { return []; }),
+      request("/traffic-rate/nodes").catch(function () { return []; })
+    ]).then(function (result) {
+      var configs = result[0] || [];
+      var statData = result[1] || {};
+      var logs = result[2] || [];
+      var nodes = result[3] || [];
+      var configStats = statData.configs || {};
+      var executionStats = statData.executions || {};
+      var backupStats = statData.backups || {};
+
+      root.innerHTML = "";
+      root.appendChild(shell("流量倍率管理", "按时间段自动调整节点倍率，可指定节点范围并自动恢复。", ROUTES.trafficRate).firstChild);
+      root.appendChild(stats([
+        { label: "配置总数", value: configStats.total || configs.length },
+        { label: "启用配置", value: typeof configStats.active === "undefined" ? configs.filter(function (item) { return isEnabled(item.status); }).length : configStats.active },
+        { label: "正在执行", value: configStats.currently_running || 0 },
+        { label: "今日成功", value: executionStats.success || 0 }
+      ]));
+
+      root.appendChild(card("配置列表", table([
+        "ID", "名称", "状态", "执行时间", "目标倍率", "节点筛选", "备份/恢复", "当前", "操作"
+      ], configs.map(function (item) {
+        return h("tr", {}, [
+          h("td", { text: item.id }),
+          h("td", { text: item.name || "-" }),
+          h("td", {}, [badge(isEnabled(item.status) ? "启用" : "禁用", isEnabled(item.status))]),
+          h("td", { text: dayText(item.days_of_week) + " " + normalizeTime(item.start_time, "00:00:00") + " ~ " + normalizeTime(item.end_time, "00:00:00") }),
+          h("td", { text: Number(item.target_rate || 0) + "x" }),
+          h("td", { text: item.node_filter_desc || (item.node_filter === "all" ? "所有节点" : item.node_filter) }),
+          h("td", { text: (isEnabled(item.backup_enabled) ? "备份" : "不备份") + " / " + (isEnabled(item.auto_restore) ? "自动恢复" : "手动恢复") }),
+          h("td", {}, [badge(isEnabled(item.is_active) ? "执行中" : "未执行", isEnabled(item.is_active), isEnabled(item.is_active) ? "is-on" : "is-off")]),
+          h("td", {}, [
+            h("div", { className: "activity-admin-row-actions" }, [
+              h("button", { className: "activity-admin-button", text: "编辑", onclick: function () { openTrafficRateForm(item, nodes); } }),
+              h("button", { className: "activity-admin-button", text: isEnabled(item.status) ? "停用" : "启用", onclick: function () { toggleTrafficRate(item); } }),
+              h("button", { className: "activity-admin-button is-success", text: "执行", onclick: function () { executeTrafficRate(item); } }),
+              h("button", { className: "activity-admin-button", text: "恢复", onclick: function () { restoreTrafficRate(item); } }),
+              h("button", { className: "activity-admin-button is-danger", text: "删除", onclick: function () { deleteTrafficRate(item); } })
+            ])
+          ])
+        ]);
+      })), [
+        h("button", { className: "activity-admin-button is-primary", text: "新增配置", onclick: function () { openTrafficRateForm(null, nodes); } }),
+        h("button", { className: "activity-admin-button", text: "清理过期备份", onclick: cleanupTrafficRate }),
+        h("button", { className: "activity-admin-button", text: "刷新", onclick: renderTrafficRate })
+      ]));
+
+      root.appendChild(card("执行记录", table([
+        "ID", "配置", "类型", "倍率", "影响节点", "状态", "执行时间", "耗时", "错误"
+      ], logs.map(function (item) {
+        return h("tr", {}, [
+          h("td", { text: item.id }),
+          h("td", { text: item.config_name || "-" }),
+          h("td", { text: item.execution_type_desc || item.execution_type || "-" }),
+          h("td", { text: Number(item.target_rate || 0) + "x" }),
+          h("td", { text: Number(item.affected_nodes || 0) + " 个" }),
+          h("td", {}, [badge(item.status_desc || item.status || "-", item.status === "success", item.status === "failed" ? "is-off" : "is-info")]),
+          h("td", { text: item.executed_at || "-" }),
+          h("td", { text: item.duration ? item.duration + "s" : "-" }),
+          h("td", { text: item.error_message || "-" })
+        ]);
+      })), [
+        h("button", { className: "activity-admin-button", text: "刷新记录", onclick: renderTrafficRate })
+      ]));
+
+      root.appendChild(card("可用节点", table([
+        "节点", "类型", "当前倍率", "内部标识"
+      ], nodes.map(function (node) {
+        return h("tr", {}, [
+          h("td", { text: node.name || ("节点" + node.id) }),
+          h("td", { text: node.type || node.server_type || "-" }),
+          h("td", { text: Number(node.rate || 0) + "x" }),
+          h("td", { text: nodeValue(node) })
+        ]);
+      })), [
+        h("span", { className: "activity-admin-help", text: "共有 " + nodes.length + " 个节点；创建包含/排除规则时可多选。" })
+      ]));
+
+      if (backupStats && typeof backupStats.pending !== "undefined") {
+        root.appendChild(h("div", {
+          className: "activity-admin-alert",
+          text: "备份记录：" + (backupStats.total || 0) + " 条，待恢复 " + (backupStats.pending || 0) + " 条，已恢复 " + (backupStats.restored || 0) + " 条。"
+        }));
+      }
+    }).catch(function (error) {
+      root.innerHTML = "";
+      root.appendChild(h("div", { className: "activity-admin-alert is-danger", text: error.message }));
+    });
+  }
+
+  function openTrafficRateForm(item, nodes) {
+    var nodeOptions = (nodes || []).map(function (node) {
+      return {
+        label: (node.name || ("节点" + node.id)) + " (" + (node.type || node.server_type || "-") + ") - " + Number(node.rate || 0) + "x",
+        value: nodeValue(node)
+      };
+    });
+    var selectedNodes = (item && item.node_ids ? item.node_ids : []).map(function (node) {
+      return String(node.server_type || "") + "#" + String(node.server_id || node.id || "");
+    });
+    modal(item ? "编辑流量倍率配置" : "新增流量倍率配置", [
+      { label: "配置名称", name: "name", value: item ? item.name : "", wide: true },
+      { label: "状态", name: "status", type: "select", value: item && !isEnabled(item.status) ? "0" : "1", options: [
+        { label: "启用", value: "1" },
+        { label: "禁用", value: "0" }
+      ] },
+      { label: "目标倍率", name: "target_rate", type: "number", min: 0.01, max: 100, step: 0.01, value: item ? item.target_rate : 1 },
+      { label: "开始时间", name: "start_time", type: "time", value: normalizeTime(item && item.start_time, "09:00:00").slice(0, 5) },
+      { label: "结束时间", name: "end_time", type: "time", value: normalizeTime(item && item.end_time, "18:00:00").slice(0, 5) },
+      { label: "生效星期", name: "days_of_week", value: item ? item.days_of_week || "1,2,3,4,5,6,7" : "1,2,3,4,5,6,7", help: "用 1-7 表示周一到周日，英文逗号分隔；空值会按每天处理。", wide: true },
+      { label: "节点筛选", name: "node_filter", type: "select", value: item ? item.node_filter : "all", options: [
+        { label: "所有节点", value: "all" },
+        { label: "只包含选中节点", value: "include" },
+        { label: "排除选中节点", value: "exclude" }
+      ] },
+      { label: "备份原倍率", name: "backup_enabled", type: "select", value: item && !isEnabled(item.backup_enabled) ? "0" : "1", options: [
+        { label: "启用", value: "1" },
+        { label: "关闭", value: "0" }
+      ] },
+      { label: "结束后恢复", name: "auto_restore", type: "select", value: item && !isEnabled(item.auto_restore) ? "0" : "1", options: [
+        { label: "自动恢复", value: "1" },
+        { label: "手动恢复", value: "0" }
+      ] },
+      { label: "TG 通知", name: "telegram_notify_enabled", type: "select", value: item && isEnabled(item.telegram_notify_enabled) ? "1" : "0", options: [
+        { label: "关闭", value: "0" },
+        { label: "启用", value: "1" }
+      ] },
+      { label: "选择节点", name: "node_ids_values", type: "select", multiple: true, value: selectedNodes, options: nodeOptions, wide: true, help: "仅在筛选方式为包含或排除时生效；编辑旧配置但这里为空时，不会覆盖已有节点选择。" },
+      { label: "描述", name: "description", type: "textarea", value: item ? item.description || "" : "", wide: true }
+    ], function (data, close) {
+      var payload = trafficRatePayload(data);
+      var selected = parseNodeValues(data.node_ids_values || []);
+      if (!payload.name) {
+        toast("请输入配置名称", "danger");
+        return;
+      }
+      if (!/^[1-7](,[1-7])*$/.test(payload.days_of_week)) {
+        toast("生效星期格式应为 1,2,3,4,5,6,7", "danger");
+        return;
+      }
+      if (payload.node_filter !== "all" && !selected.length && !item) {
+        toast("包含或排除规则至少选择一个节点", "danger");
+        return;
+      }
+      if (payload.node_filter !== "all" && !selected.length && item) {
+        if (item.node_filter !== payload.node_filter) {
+          toast("切换包含/排除筛选方式时，请重新选择节点", "danger");
+          return;
+        }
+        delete payload.node_ids;
+      }
+      request(item ? "/traffic-rate/configs/" + item.id : "/traffic-rate/configs", {
+        method: item ? "PUT" : "POST",
+        body: JSON.stringify(payload)
+      }).then(function () {
+        close();
+        toast("流量倍率配置已保存");
+        renderTrafficRate();
+      }).catch(function (error) {
+        toast(error.message, "danger");
+      });
+    });
+  }
+
+  function toggleTrafficRate(item) {
+    request("/traffic-rate/configs/" + item.id + "/toggle", {
+      method: "POST",
+      body: JSON.stringify({})
+    }).then(function () {
+      toast("流量倍率状态已切换");
+      renderTrafficRate();
+    }).catch(function (error) {
+      toast(error.message, "danger");
+    });
+  }
+
+  function executeTrafficRate(item) {
+    if (!window.confirm("确定立即执行「" + item.name + "」吗？")) return;
+    request("/traffic-rate/configs/" + item.id + "/execute", {
+      method: "POST",
+      body: JSON.stringify({})
+    }).then(function () {
+      toast("流量倍率配置已执行");
+      renderTrafficRate();
+    }).catch(function (error) {
+      toast(error.message, "danger");
+    });
+  }
+
+  function restoreTrafficRate(item) {
+    if (!window.confirm("确定恢复「" + item.name + "」影响的节点倍率吗？")) return;
+    request("/traffic-rate/configs/" + item.id + "/restore", {
+      method: "POST",
+      body: JSON.stringify({})
+    }).then(function () {
+      toast("流量倍率配置已恢复");
+      renderTrafficRate();
+    }).catch(function (error) {
+      toast(error.message, "danger");
+    });
+  }
+
+  function deleteTrafficRate(item) {
+    if (!window.confirm("确定删除「" + item.name + "」吗？有未恢复备份时后端会拒绝删除。")) return;
+    request("/traffic-rate/configs/" + item.id, {
+      method: "DELETE"
+    }).then(function () {
+      toast("流量倍率配置已删除");
+      renderTrafficRate();
+    }).catch(function (error) {
+      toast(error.message, "danger");
+    });
+  }
+
+  function cleanupTrafficRate() {
+    if (!window.confirm("确定清理过期倍率备份记录吗？")) return;
+    request("/traffic-rate/cleanup", {
+      method: "POST",
+      body: JSON.stringify({})
+    }).then(function (result) {
+      toast("已清理 " + ((result && result.deleted_count) || 0) + " 条过期备份");
+      renderTrafficRate();
+    }).catch(function (error) {
+      toast(error.message, "danger");
+    });
+  }
+
+  function renderAutoSpeedlimit() {
+    var main = findMainContainer();
+    if (!main) return;
+    main.innerHTML = "";
+    var root = shell("自动限速管理", "按用户流量使用比例自动调整限速，支持五级阈值。", ROUTES.autoSpeedlimit);
+    main.appendChild(root);
+    renderLoading(root);
+
+    Promise.all([
+      requestRaw("/auto-speedlimit/config"),
+      request("/auto-speedlimit/stats").catch(function () { return {}; }),
+      requestRaw("/auto-speedlimit/limited-users?per_page=20").catch(function () { return { data: [], total: 0 }; }),
+      requestRaw("/auto-speedlimit/logs?per_page=20").catch(function () { return { data: [], total: 0 }; })
+    ]).then(function (result) {
+      var configPayload = result[0] || {};
+      var config = configPayload.data || {};
+      var summary = configPayload.summary || (result[1] && result[1].config_summary) || {};
+      var statData = result[1] || {};
+      var limitedPayload = result[2] || {};
+      var logsPayload = result[3] || {};
+      var limitedUsers = unwrapPageData(limitedPayload);
+      var logs = unwrapPageData(logsPayload);
+
+      root.innerHTML = "";
+      root.appendChild(shell("自动限速管理", "按用户流量使用比例自动调整限速，支持五级阈值。", ROUTES.autoSpeedlimit).firstChild);
+      root.appendChild(stats([
+        { label: "功能状态", value: isEnabled(statData.config_enabled) || isEnabled(config.enable) ? "已启用" : "已禁用" },
+        { label: "当前限速用户", value: statData.current_limited_users || unwrapPageTotal(limitedPayload) || 0 },
+        { label: "近 7 天限速", value: (statData.recent_stats && statData.recent_stats.limit_operations) || 0 },
+        { label: "近 7 天恢复", value: (statData.recent_stats && statData.recent_stats.restore_operations) || 0 }
+      ]));
+
+      root.appendChild(card("配置管理", table([
+        "启用", "流量模式", "每日基准", "有效等级", "等级配置"
+      ], [
+        h("tr", {}, [
+          h("td", {}, [badge(isEnabled(config.enable) ? "启用" : "禁用", isEnabled(config.enable))]),
+          h("td", { text: trafficModeText(config.traffic_mode) }),
+          h("td", { text: dailyCalcText(config.daily_calc_mode) }),
+          h("td", { text: (summary.levels_count || collectAutoLevels(config).length || 0) + " 级" }),
+          h("td", { text: collectAutoLevels(config).map(function (level) {
+            return level.threshold + "% -> " + level.speed + "Mbps";
+          }).join("；") || "-" })
+        ])
+      ]), [
+        h("button", { className: "activity-admin-button is-primary", text: "编辑配置", onclick: function () { openAutoSpeedlimitForm(config); } }),
+        h("button", { className: "activity-admin-button is-success", text: "手动执行检查", onclick: executeAutoSpeedlimit }),
+        h("button", { className: "activity-admin-button", text: "检查指定用户", onclick: function () { openAutoUserAction("check"); } }),
+        h("button", { className: "activity-admin-button", text: "恢复指定用户", onclick: function () { openAutoUserAction("restore"); } }),
+        h("button", { className: "activity-admin-button", text: "清理日志", onclick: openAutoCleanLogs }),
+        h("button", { className: "activity-admin-button", text: "刷新", onclick: renderAutoSpeedlimit })
+      ]));
+
+      root.appendChild(card("当前被限速用户", table([
+        "ID", "邮箱", "等级", "当前限速", "原始限速", "当日流量", "总流量", "今日使用", "剩余流量", "操作"
+      ], limitedUsers.map(function (user) {
+        return h("tr", {}, [
+          h("td", { text: user.id }),
+          h("td", { text: user.email || "-" }),
+          h("td", {}, [badge("等级 " + (user.auto_speedlimit_status || 0), true, "is-info")]),
+          h("td", { text: fmtSpeed(user.speed_limit) }),
+          h("td", { text: fmtSpeed(user.original_speedlimit) }),
+          h("td", { text: fmtPercent(user.daily_percent) }),
+          h("td", { text: fmtPercent(user.total_percent) }),
+          h("td", { text: fmtTraffic(user.today_used) }),
+          h("td", { text: fmtTraffic(user.remaining) }),
+          h("td", {}, [
+            h("div", { className: "activity-admin-row-actions" }, [
+              h("button", { className: "activity-admin-button", text: "检查", onclick: function () { openAutoUserAction("check", user); } }),
+              h("button", { className: "activity-admin-button", text: "恢复", onclick: function () { openAutoUserAction("restore", user); } })
+            ])
+          ])
+        ]);
+      })), [
+        h("span", { className: "activity-admin-help", text: "当前显示 " + limitedUsers.length + " / " + unwrapPageTotal(limitedPayload) + " 人。" })
+      ]));
+
+      root.appendChild(card("操作日志", table([
+        "ID", "用户", "动作", "状态变化", "限速变化", "当日/总量", "触发信息", "时间"
+      ], logs.map(function (log) {
+        return h("tr", {}, [
+          h("td", { text: log.id }),
+          h("td", { text: (log.user_email || "-") + " (#" + (log.user_id || "-") + ")" }),
+          h("td", {}, [badge(log.action_desc || (log.action === "restore" ? "恢复" : "限速"), log.action === "restore", log.action === "restore" ? "is-on" : "is-info")]),
+          h("td", { text: (log.old_status_desc || log.old_status || "-") + " -> " + (log.new_status_desc || log.new_status || "-") }),
+          h("td", { text: (log.old_speedlimit_desc || fmtSpeed(log.old_speedlimit)) + " -> " + (log.new_speedlimit_desc || fmtSpeed(log.new_speedlimit)) }),
+          h("td", { text: fmtPercent(log.daily_percent) + " / " + fmtPercent(log.total_percent) }),
+          h("td", { text: log.trigger_info || "-" }),
+          h("td", { text: fmtDate(log.created_at) })
+        ]);
+      })), [
+        h("span", { className: "activity-admin-help", text: "当前显示 " + logs.length + " / " + unwrapPageTotal(logsPayload) + " 条。" })
+      ]));
+    }).catch(function (error) {
+      root.innerHTML = "";
+      root.appendChild(h("div", { className: "activity-admin-alert is-danger", text: error.message }));
+    });
+  }
+
+  function collectAutoLevels(config) {
+    var levels = [];
+    for (var index = 1; index <= 5; index++) {
+      var threshold = config && config["threshold_" + index];
+      var speed = config && config["speed_" + index];
+      if (threshold !== null && typeof threshold !== "undefined" && threshold !== "" && speed !== null && typeof speed !== "undefined" && speed !== "") {
+        levels.push({
+          level: index,
+          threshold: Number(threshold),
+          speed: Number(speed)
+        });
+      }
+    }
+    return levels;
+  }
+
+  function openAutoSpeedlimitForm(config) {
+    var fields = [
+      { label: "启用状态", name: "enable", type: "select", value: config && isEnabled(config.enable) ? "1" : "0", options: [
+        { label: "启用", value: "1" },
+        { label: "禁用", value: "0" }
+      ] },
+      { label: "流量计算模式", name: "traffic_mode", type: "select", value: config ? config.traffic_mode : "daily", options: [
+        { label: "当日流量", value: "daily" },
+        { label: "总流量", value: "total" },
+        { label: "双重检查", value: "both" }
+      ] },
+      { label: "每日流量基准", name: "daily_calc_mode", type: "select", value: config ? config.daily_calc_mode : "total", options: [
+        { label: "基于总配额", value: "total" },
+        { label: "基于剩余流量", value: "remaining" }
+      ], wide: true }
+    ];
+    for (var index = 1; index <= 5; index++) {
+      fields.push({ label: "等级 " + index + " 阈值(%)", name: "threshold_" + index, type: "number", min: 0, max: 100, step: 0.01, value: config ? config["threshold_" + index] : "" });
+      fields.push({ label: "等级 " + index + " 限速(Mbps)", name: "speed_" + index, type: "number", min: 1, step: 1, value: config ? config["speed_" + index] : "" });
+    }
+    modal("编辑自动限速配置", fields, function (data, close) {
+      var payload = autoSpeedlimitPayload(data);
+      var hasLevel = false;
+      for (var index = 1; index <= 5; index++) {
+        var threshold = payload["threshold_" + index];
+        var speed = payload["speed_" + index];
+        if ((threshold === null) !== (speed === null)) {
+          toast("等级 " + index + " 的阈值和限速必须同时填写或同时为空", "danger");
+          return;
+        }
+        if (threshold !== null && speed !== null) {
+          hasLevel = true;
+        }
+      }
+      if (!hasLevel) {
+        toast("至少需要配置一个限速等级", "danger");
+        return;
+      }
+      request("/auto-speedlimit/config", {
+        method: "POST",
+        body: JSON.stringify(payload)
+      }).then(function () {
+        close();
+        toast("自动限速配置已保存");
+        renderAutoSpeedlimit();
+      }).catch(function (error) {
+        toast(error.message, "danger");
+      });
+    });
+  }
+
+  function executeAutoSpeedlimit() {
+    if (!window.confirm("确定立即执行一次自动限速检查吗？")) return;
+    requestRaw("/auto-speedlimit/execute", {
+      method: "POST",
+      body: JSON.stringify({})
+    }).then(function (result) {
+      var stat = result.stats || {};
+      toast(result.message || ("检查完成：检查 " + (stat.checked_users || 0) + " 人，限速 " + (stat.limited_users || 0) + " 人，恢复 " + (stat.restored_users || 0) + " 人"));
+      renderAutoSpeedlimit();
+    }).catch(function (error) {
+      toast(error.message, "danger");
+    });
+  }
+
+  function openAutoUserAction(action, user) {
+    modal(action === "restore" ? "恢复用户限速" : "检查指定用户", [
+      { label: "用户 ID", name: "user_id", type: "number", min: 1, step: 1, value: user ? user.id : "", wide: true, help: action === "restore" ? "恢复该用户原始限速。" : "重新计算该用户流量并更新限速状态。" }
+    ], function (data, close) {
+      var userId = Number(data.user_id || 0);
+      if (!userId) {
+        toast("请输入用户 ID", "danger");
+        return;
+      }
+      requestRaw(action === "restore" ? "/auto-speedlimit/restore-user" : "/auto-speedlimit/check-user", {
+        method: "POST",
+        body: JSON.stringify({ user_id: userId })
+      }).then(function (result) {
+        close();
+        toast(result.message || "操作完成");
+        renderAutoSpeedlimit();
+      }).catch(function (error) {
+        toast(error.message, "danger");
+      });
+    });
+  }
+
+  function openAutoCleanLogs() {
+    modal("清理自动限速日志", [
+      { label: "保留天数", name: "keep_days", type: "number", min: 1, max: 365, step: 1, value: 30, wide: true, help: "会删除此天数之前的旧日志，操作不可恢复。" }
+    ], function (data, close) {
+      var keepDays = Number(data.keep_days || 30);
+      if (!window.confirm("确定只保留最近 " + keepDays + " 天日志吗？")) return;
+      requestRaw("/auto-speedlimit/clean-logs", {
+        method: "POST",
+        body: JSON.stringify({ keep_days: keepDays })
+      }).then(function (result) {
+        close();
+        toast(result.message || ("已清理 " + (result.deleted_count || 0) + " 条日志"));
+        renderAutoSpeedlimit();
+      }).catch(function (error) {
+        toast(error.message, "danger");
+      });
+    });
+  }
+
   function renderRoute() {
     injectStyle();
     injectMenu();
@@ -116453,19 +117143,28 @@
       return;
     }
     var route = currentRoute();
-    if (route !== ROUTES.checkin && route !== ROUTES.lottery) {
+    if (!isActivityRoute(route)) {
+      document.body.classList.remove("v2board-activity-admin-active");
+      setActiveMenu("");
+      leaveActivityRoute();
       return;
     }
     if (!findMainContainer()) {
       window.setTimeout(renderRoute, 50);
       return;
     }
+    document.body.classList.add("v2board-activity-admin-active");
     clearOriginalActiveMenu();
     setActiveMenu(route);
+    window.setTimeout(clearOriginalActiveMenu, 0);
     if (route === ROUTES.checkin) {
       renderCheckin();
-    } else {
+    } else if (route === ROUTES.lottery) {
       renderLottery();
+    } else if (route === ROUTES.trafficRate) {
+      renderTrafficRate();
+    } else {
+      renderAutoSpeedlimit();
     }
   }
 
@@ -116474,14 +117173,21 @@
     injectMenu();
     renderRoute();
     window.addEventListener("hashchange", renderRoute);
+    document.addEventListener("click", handleSidebarNavigation, true);
     var observer = new MutationObserver(function () {
       injectMenu();
       var route = currentRoute();
-      if ((route === ROUTES.checkin || route === ROUTES.lottery) && !document.querySelector("#main-container .activity-admin-root")) {
+      if (isActivityRoute(route) && !document.querySelector("#main-container .activity-admin-root")) {
         window.setTimeout(renderRoute, 0);
         return;
       }
       setActiveMenu(route);
+      if (isActivityRoute(route)) {
+        document.body.classList.add("v2board-activity-admin-active");
+        clearOriginalActiveMenu();
+      } else {
+        document.body.classList.remove("v2board-activity-admin-active");
+      }
     });
     observer.observe(document.body, { childList: true, subtree: true });
   }
