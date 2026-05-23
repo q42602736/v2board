@@ -25,3 +25,4 @@ public/clients/*
 workerman.webman.php.pid
 workerman.log
 ${HOME}/
+.ace-tool/
