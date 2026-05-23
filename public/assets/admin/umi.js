@@ -115518,6 +115518,7 @@
     checkin: "activity/checkin",
     lottery: "activity/lottery"
   };
+  var DASHBOARD_ROUTE = "dashboard";
   var MB = 1024 * 1024;
 
   function injectStyle() {
@@ -115949,11 +115950,35 @@
   }
 
   function currentRoute() {
-    return window.location.hash.replace(/^#\/?/, "");
+    var hash = window.location.hash.replace(/^#\/?/, "");
+    var queryIndex = hash.indexOf("?");
+    var path = queryIndex === -1 ? hash : hash.slice(0, queryIndex);
+    var query = queryIndex === -1 ? "" : hash.slice(queryIndex + 1);
+    var activityMatch = query.match(/(?:^|&)activity=(checkin|lottery)(?:&|$)/);
+    if (path === DASHBOARD_ROUTE && activityMatch) {
+      return ROUTES[activityMatch[1]];
+    }
+    return path;
   }
 
   function goto(route) {
-    window.location.hash = route;
+    var activity = route === ROUTES.lottery ? "lottery" : "checkin";
+    window.location.hash = "/" + DASHBOARD_ROUTE + "?activity=" + activity;
+  }
+
+  function routeHref(route) {
+    var activity = route === ROUTES.lottery ? "lottery" : "checkin";
+    return "#/" + DASHBOARD_ROUTE + "?activity=" + activity;
+  }
+
+  function normalizeActivityRoute() {
+    var route = window.location.hash.replace(/^#\/?/, "").split("?")[0];
+    if (route !== ROUTES.checkin && route !== ROUTES.lottery) {
+      return false;
+    }
+    var activity = route === ROUTES.lottery ? "lottery" : "checkin";
+    window.location.replace("#/" + DASHBOARD_ROUTE + "?activity=" + activity);
+    return true;
   }
 
   function toast(message, type) {
@@ -115993,7 +116018,7 @@
     ].forEach(function (item) {
       var link = h("a", {
         className: "nav-main-link",
-        href: "#" + item.route,
+        href: routeHref(item.route),
         "data-activity-admin-menu": item.route,
         onclick: function (event) {
           event.preventDefault();
@@ -116420,8 +116445,15 @@
   function renderRoute() {
     injectStyle();
     injectMenu();
+    if (normalizeActivityRoute()) {
+      return;
+    }
     var route = currentRoute();
     if (route !== ROUTES.checkin && route !== ROUTES.lottery) {
+      return;
+    }
+    if (!findMainContainer()) {
+      window.setTimeout(renderRoute, 50);
       return;
     }
     clearOriginalActiveMenu();
