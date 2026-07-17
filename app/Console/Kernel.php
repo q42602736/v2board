@@ -48,7 +48,7 @@ class Kernel extends ConsoleKernel
         // traffic rate
         $schedule->command('traffic-rate:check')->everyMinute();
         // auto speedlimit
-        $schedule->command('auto-speedlimit:check')->everyMinute()->withoutOverlapping();
+        $schedule->command('auto-speedlimit:check')->everyFiveMinutes()->withoutOverlapping();
         // horizon metrics
         $schedule->command('horizon:snapshot')->everyFiveMinutes();
     }

@@ -106,24 +106,16 @@ class AutoSpeedlimitService
     private function processUserSpeedLimit($user, $config, $speedLimits)
     {
         try {
-            // 计算流量使用百分比
+            // 计算流量使用情况
             $dailyPercent = 0;
             $totalPercent = 0;
+            $dailyTrafficGb = 0;
+            $limitBasis = $config->limit_basis ?: 'ratio';
             
-            if ($config->traffic_mode === 'daily' || $config->traffic_mode === 'both') {
-                if ($config->daily_calc_mode === 'remaining') {
-                    try {
-                        $dailyPercent = $this->getTodayUsedTrafficPercentOfRemainingNew($user);
-                    } catch (\Exception $e) {
-                        $dailyPercent = 0; // 异常时不限速
-                    }
-                } else {
-                    try {
-                        $dailyPercent = $this->getTodayUsedTrafficPercentNew($user);
-                    } catch (\Exception $e) {
-                        $dailyPercent = 0; // 异常时不限速
-                    }
-                }
+            if ($limitBasis === 'daily_fixed' || $config->traffic_mode === 'daily' || $config->traffic_mode === 'both') {
+                $dailyStats = $this->getUserTodayTrafficStats($user, $config->daily_calc_mode);
+                $dailyPercent = $dailyStats['daily_percent'];
+                $dailyTrafficGb = $dailyStats['today_used_gb'];
             }
             
             if ($config->traffic_mode === 'total' || $config->traffic_mode === 'both') {
@@ -131,7 +123,14 @@ class AutoSpeedlimitService
             }
             
             // 计算应该应用的限速
-            $result = $this->calculateSpeedLimit($dailyPercent, $totalPercent, $config->traffic_mode, $speedLimits);
+            $result = $this->calculateSpeedLimit(
+                $dailyPercent,
+                $totalPercent,
+                $config->traffic_mode,
+                $speedLimits,
+                $limitBasis,
+                $dailyTrafficGb
+            );
             
             $newStatus = $result['level'];
             $newSpeedLimit = $result['speed'];
@@ -157,7 +156,14 @@ class AutoSpeedlimitService
     /**
      * 计算应该应用的限速等级
      */
-    private function calculateSpeedLimit($dailyPercent, $totalPercent, $trafficMode, $speedLimits)
+    private function calculateSpeedLimit(
+        $dailyPercent,
+        $totalPercent,
+        $trafficMode,
+        $speedLimits,
+        $limitBasis = 'ratio',
+        $dailyTrafficGb = 0
+    )
     {
         $triggeredLevel = 0;
         $triggeredSpeed = 0;
@@ -165,26 +171,34 @@ class AutoSpeedlimitService
         
         foreach ($speedLimits as $limit) {
             $shouldTrigger = false;
-            
-            switch ($trafficMode) {
-                case 'daily':
-                    if ($dailyPercent >= $limit['threshold']) {
-                        $shouldTrigger = true;
-                        $triggerInfo = "当日流量{$dailyPercent}%≥{$limit['threshold']}%";
-                    }
-                    break;
-                case 'total':
-                    if ($totalPercent >= $limit['threshold']) {
-                        $shouldTrigger = true;
-                        $triggerInfo = "总流量{$totalPercent}%≥{$limit['threshold']}%";
-                    }
-                    break;
-                case 'both':
-                    if ($dailyPercent >= $limit['threshold'] || $totalPercent >= $limit['threshold']) {
-                        $shouldTrigger = true;
-                        $triggerInfo = "当日{$dailyPercent}%或总计{$totalPercent}%≥{$limit['threshold']}%";
-                    }
-                    break;
+
+            if ($limitBasis === 'daily_fixed') {
+                if ($dailyTrafficGb >= $limit['threshold']) {
+                    $shouldTrigger = true;
+                    $usedTraffic = round($dailyTrafficGb, 2);
+                    $triggerInfo = "当日计费流量{$usedTraffic}GB≥{$limit['threshold']}GB";
+                }
+            } else {
+                switch ($trafficMode) {
+                    case 'daily':
+                        if ($dailyPercent >= $limit['threshold']) {
+                            $shouldTrigger = true;
+                            $triggerInfo = "当日流量{$dailyPercent}%≥{$limit['threshold']}%";
+                        }
+                        break;
+                    case 'total':
+                        if ($totalPercent >= $limit['threshold']) {
+                            $shouldTrigger = true;
+                            $triggerInfo = "总流量{$totalPercent}%≥{$limit['threshold']}%";
+                        }
+                        break;
+                    case 'both':
+                        if ($dailyPercent >= $limit['threshold'] || $totalPercent >= $limit['threshold']) {
+                            $shouldTrigger = true;
+                            $triggerInfo = "当日{$dailyPercent}%或总计{$totalPercent}%≥{$limit['threshold']}%";
+                        }
+                        break;
+                }
             }
             
             if ($shouldTrigger) {
@@ -269,8 +283,13 @@ class AutoSpeedlimitService
             $shouldRestore = false;
             $restoreReason = '';
             
-            // 根据流量模式判断是否需要恢复
-            if ($config->traffic_mode === 'daily') {
+            // 根据限速依据和流量模式判断是否需要恢复
+            if ($config->limit_basis === 'daily_fixed') {
+                if ($this->isDailyReset()) {
+                    $shouldRestore = true;
+                    $restoreReason = '当日固定流量重置';
+                }
+            } elseif ($config->traffic_mode === 'daily') {
                 // 当日流量模式：每天0点恢复
                 if ($this->isDailyReset()) {
                     $shouldRestore = true;
@@ -432,8 +451,38 @@ class AutoSpeedlimitService
     }
 
     /**
-     * 使用管理员后台相同的逻辑计算用户今日流量
-     * 基于 v2_stat_user 表的实际统计数据
+     * 获取与自动限速一致的用户当日流量统计
+     */
+    public function getUserTodayTrafficStats($user, $dailyCalcMode = 'total')
+    {
+        $todayTraffic = $this->getUserTodayTrafficFromStatTable($user->id);
+        $dailyPercent = 0;
+
+        if ($user->transfer_enable > 0) {
+            if ($dailyCalcMode === 'remaining') {
+                $totalUsed = $user->u + $user->d;
+                $yesterdayUsed = $totalUsed - $todayTraffic;
+                $yesterdayRemaining = $user->transfer_enable - $yesterdayUsed;
+
+                if ($yesterdayRemaining <= 0) {
+                    $dailyPercent = 100;
+                } else {
+                    $dailyPercent = min(100, max(0, round(($todayTraffic / $yesterdayRemaining) * 100, 2)));
+                }
+            } else {
+                $dailyPercent = round(($todayTraffic / $user->transfer_enable) * 100, 2);
+            }
+        }
+
+        return [
+            'today_used' => $todayTraffic,
+            'today_used_gb' => $todayTraffic / 1073741824,
+            'daily_percent' => $dailyPercent,
+        ];
+    }
+
+    /**
+     * 基于 v2_stat_user 表计算用户今日计费流量
      */
     private function getUserTodayTrafficFromStatTable($userId)
     {
@@ -470,70 +519,6 @@ class AutoSpeedlimitService
                 'error' => $e->getMessage()
             ]);
             return 0;
-        }
-    }
-
-    /**
-     * 使用管理员后台相同逻辑计算今日流量百分比（normal模式）
-     */
-    private function getTodayUsedTrafficPercentNew($user)
-    {
-        try {
-            if ($user->transfer_enable <= 0) {
-                return 0;
-            }
-
-            $todayTraffic = $this->getUserTodayTrafficFromStatTable($user->id);
-            $todayPercent = ($todayTraffic / $user->transfer_enable) * 100;
-
-            return round($todayPercent, 2);
-        } catch (\Exception $e) {
-            Log::error('新方法计算失败', [
-                'user_id' => $user->id,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            return 0; // 异常时返回0，不触发限速
-        }
-    }
-
-    /**
-     * 使用管理员后台相同逻辑计算今日流量百分比（remaining模式）
-     */
-    private function getTodayUsedTrafficPercentOfRemainingNew($user)
-    {
-        try {
-            if ($user->transfer_enable <= 0) {
-                return 0;
-            }
-
-            // 使用基于 v2_stat_user 表的准确今日流量计算
-            $todayTraffic = $this->getUserTodayTrafficFromStatTable($user->id);
-
-            // remaining模式：计算昨日结束时的剩余流量
-            $totalUsed = $user->u + $user->d; // 当前总已用流量
-            $yesterdayUsed = $totalUsed - $todayTraffic; // 昨日使用流量（近似）
-            $yesterdayRemaining = $user->transfer_enable - $yesterdayUsed; // 昨日剩余流量
-
-            // 特殊情况处理
-            if ($yesterdayRemaining <= 0) {
-                return $todayTraffic > 0 ? 100 : 100;
-            }
-
-            // 正常情况：计算今日流量占昨日剩余流量的百分比
-            $todayPercent = ($todayTraffic / $yesterdayRemaining) * 100;
-
-            // 如果今日使用超过了昨日剩余流量，返回100%
-            $finalPercent = min(100, max(0, round($todayPercent, 2)));
-
-            return $finalPercent;
-        } catch (\Exception $e) {
-            Log::error('新方法计算失败', [
-                'user_id' => $user->id,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            return 0; // 异常时返回0，不触发限速
         }
     }
 }

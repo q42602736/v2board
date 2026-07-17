@@ -43,19 +43,24 @@ class AutoSpeedlimitController extends Controller
      */
     public function updateConfig(Request $request)
     {
+        $currentConfig = AutoSpeedlimitConfig::getConfig();
+        $limitBasis = $request->input('limit_basis', $currentConfig->limit_basis ?: 'ratio');
+        $maxThreshold = $limitBasis === 'daily_fixed' ? 999.99 : 100;
+
         $validator = Validator::make($request->all(), [
             'enable' => 'required|boolean',
+            'limit_basis' => 'sometimes|in:ratio,daily_fixed',
             'traffic_mode' => 'required|in:daily,total,both',
             'daily_calc_mode' => 'required|in:total,remaining',
-            'threshold_1' => 'nullable|numeric|min:0|max:100',
+            'threshold_1' => "nullable|numeric|min:0.01|max:{$maxThreshold}",
             'speed_1' => 'nullable|integer|min:1',
-            'threshold_2' => 'nullable|numeric|min:0|max:100',
+            'threshold_2' => "nullable|numeric|min:0.01|max:{$maxThreshold}",
             'speed_2' => 'nullable|integer|min:1',
-            'threshold_3' => 'nullable|numeric|min:0|max:100',
+            'threshold_3' => "nullable|numeric|min:0.01|max:{$maxThreshold}",
             'speed_3' => 'nullable|integer|min:1',
-            'threshold_4' => 'nullable|numeric|min:0|max:100',
+            'threshold_4' => "nullable|numeric|min:0.01|max:{$maxThreshold}",
             'speed_4' => 'nullable|integer|min:1',
-            'threshold_5' => 'nullable|numeric|min:0|max:100',
+            'threshold_5' => "nullable|numeric|min:0.01|max:{$maxThreshold}",
             'speed_5' => 'nullable|integer|min:1',
         ]);
 
@@ -174,18 +179,14 @@ class AutoSpeedlimitController extends Controller
             
             // 获取配置以计算流量百分比
             $config = AutoSpeedlimitConfig::getConfig();
+            $autoSpeedlimitService = $this->autoSpeedlimitService;
             
-            $users->getCollection()->transform(function ($user) use ($config) {
-                $dailyPercent = 0;
+            $users->getCollection()->transform(function ($user) use ($config, $autoSpeedlimitService) {
+                $dailyStats = $autoSpeedlimitService->getUserTodayTrafficStats(
+                    $user,
+                    $config ? $config->daily_calc_mode : 'total'
+                );
                 $totalPercent = $user->getTrafficUsagePercent();
-                
-                if ($config) {
-                    if ($config->daily_calc_mode === 'remaining') {
-                        $dailyPercent = $user->getTodayUsedTrafficPercentOfRemaining();
-                    } else {
-                        $dailyPercent = $user->getTodayUsedTrafficPercent();
-                    }
-                }
                 
                 return [
                     'id' => $user->id,
@@ -193,12 +194,12 @@ class AutoSpeedlimitController extends Controller
                     'auto_speedlimit_status' => $user->auto_speedlimit_status,
                     'speed_limit' => $user->speed_limit,
                     'original_speedlimit' => $user->original_speedlimit,
-                    'daily_percent' => round($dailyPercent, 2),
+                    'daily_percent' => $dailyStats['daily_percent'],
                     'total_percent' => round($totalPercent, 2),
                     'transfer_enable' => $user->transfer_enable,
                     'u' => $user->u,
                     'd' => $user->d,
-                    'today_used' => $user->getTodayUsedTraffic(),
+                    'today_used' => $dailyStats['today_used'],
                     'remaining' => $user->getRemainingTraffic(),
                 ];
             });

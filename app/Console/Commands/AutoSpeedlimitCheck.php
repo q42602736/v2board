@@ -116,6 +116,7 @@ class AutoSpeedlimitCheck extends Command
             
             if ($stats['config_summary']) {
                 $summary = $stats['config_summary'];
+                $this->info('  - 限速依据: ' . $summary['limit_basis']);
                 $this->info('  - 流量计算模式: ' . $summary['traffic_mode']);
                 $this->info('  - 每日计算基准: ' . $summary['daily_calc_mode']);
                 $this->info('  - 配置等级数: ' . $summary['levels_count']);
@@ -123,7 +124,7 @@ class AutoSpeedlimitCheck extends Command
                 if (!empty($summary['levels'])) {
                     $this->info('  - 限速等级:');
                     foreach ($summary['levels'] as $level) {
-                        $this->info("    等级{$level['level']}: {$level['threshold']}% → {$level['speed']}Mbps");
+                        $this->info("    等级{$level['level']}: {$level['threshold']}{$summary['threshold_unit']} → {$level['speed']}Mbps");
                     }
                 }
             }
