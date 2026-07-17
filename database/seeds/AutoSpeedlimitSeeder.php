@@ -16,6 +16,7 @@ class AutoSpeedlimitSeeder extends Seeder
         // 创建默认配置
         AutoSpeedlimitConfig::create([
             'enable' => false, // 默认禁用
+            'limit_basis' => 'ratio', // 默认按流量使用比例限速
             'traffic_mode' => 'daily', // 默认使用当日流量模式
             'daily_calc_mode' => 'total', // 默认基于总配额计算
             

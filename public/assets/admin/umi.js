@@ -116074,6 +116074,7 @@
   function autoSpeedlimitPayload(data) {
     var payload = {
       enable: data.enable === "1",
+      limit_basis: data.limit_basis || "ratio",
       traffic_mode: data.traffic_mode || "daily",
       daily_calc_mode: data.daily_calc_mode || "total"
     };
@@ -116357,6 +116358,9 @@
         h("label", { text: field.label }),
         input
       ]);
+      if (field.hidden) {
+        wrapper.style.display = "none";
+      }
       if (field.help) {
         wrapper.appendChild(h("div", { className: "activity-admin-help", text: field.help }));
       }
@@ -116676,6 +116680,37 @@
     return "基于总配额";
   }
 
+  function limitBasisText(value) {
+    return value === "daily_fixed" ? "当日固定流量" : "流量使用比例";
+  }
+
+  function autoThresholdUnit(config) {
+    return config && config.limit_basis === "daily_fixed" ? "GB" : "%";
+  }
+
+  function autoThresholdText(config, threshold) {
+    return Number(threshold) + autoThresholdUnit(config);
+  }
+
+  function updateAutoSpeedlimitBasisFields(form, value) {
+    var isDailyFixed = value === "daily_fixed";
+    ["traffic_mode", "daily_calc_mode"].forEach(function (name) {
+      var input = form.querySelector('[name="' + name + '"]');
+      if (input && input.parentNode) {
+        input.parentNode.style.display = isDailyFixed ? "none" : "";
+      }
+    });
+    for (var index = 1; index <= 5; index++) {
+      var thresholdInput = form.querySelector('[name="threshold_' + index + '"]');
+      if (!thresholdInput) continue;
+      thresholdInput.max = isDailyFixed ? "999.99" : "100";
+      var label = thresholdInput.parentNode && thresholdInput.parentNode.querySelector("label");
+      if (label) {
+        label.textContent = "等级 " + index + " 阈值(" + (isDailyFixed ? "GB" : "%") + ")";
+      }
+    }
+  }
+
   function renderTrafficRate() {
     var main = findMainContainer();
     if (!main) return;
@@ -116919,7 +116954,7 @@
     var main = findMainContainer();
     if (!main) return;
     main.innerHTML = "";
-    var root = shell("自动限速管理", "按用户流量使用比例自动调整限速，支持五级阈值。", ROUTES.autoSpeedlimit);
+    var root = shell("自动限速管理", "按流量使用比例或当日固定用量自动调整限速，支持五级阈值。", ROUTES.autoSpeedlimit);
     main.appendChild(root);
     renderLoading(root);
 
@@ -116939,7 +116974,7 @@
       var logs = unwrapPageData(logsPayload);
 
       root.innerHTML = "";
-      root.appendChild(shell("自动限速管理", "按用户流量使用比例自动调整限速，支持五级阈值。", ROUTES.autoSpeedlimit).firstChild);
+      root.appendChild(shell("自动限速管理", "按流量使用比例或当日固定用量自动调整限速，支持五级阈值。", ROUTES.autoSpeedlimit).firstChild);
       root.appendChild(stats([
         { label: "功能状态", value: isEnabled(statData.config_enabled) || isEnabled(config.enable) ? "已启用" : "已禁用" },
         { label: "当前限速用户", value: statData.current_limited_users || unwrapPageTotal(limitedPayload) || 0 },
@@ -116948,15 +116983,16 @@
       ]));
 
       root.appendChild(card("配置管理", table([
-        "启用", "流量模式", "每日基准", "有效等级", "等级配置"
+        "启用", "限速依据", "流量模式", "每日基准", "有效等级", "等级配置"
       ], [
         h("tr", {}, [
           h("td", {}, [badge(isEnabled(config.enable) ? "启用" : "禁用", isEnabled(config.enable))]),
-          h("td", { text: trafficModeText(config.traffic_mode) }),
-          h("td", { text: dailyCalcText(config.daily_calc_mode) }),
+          h("td", { text: limitBasisText(config.limit_basis) }),
+          h("td", { text: config.limit_basis === "daily_fixed" ? "当日流量" : trafficModeText(config.traffic_mode) }),
+          h("td", { text: config.limit_basis === "daily_fixed" ? "固定用量(GB)" : dailyCalcText(config.daily_calc_mode) }),
           h("td", { text: (summary.levels_count || collectAutoLevels(config).length || 0) + " 级" }),
           h("td", { text: collectAutoLevels(config).map(function (level) {
-            return level.threshold + "% -> " + level.speed + "Mbps";
+            return autoThresholdText(config, level.threshold) + " -> " + level.speed + "Mbps";
           }).join("；") || "-" })
         ])
       ]), [
@@ -117031,23 +117067,31 @@
   }
 
   function openAutoSpeedlimitForm(config) {
+    var isDailyFixed = config && config.limit_basis === "daily_fixed";
+    var thresholdUnit = isDailyFixed ? "GB" : "%";
     var fields = [
       { label: "启用状态", name: "enable", type: "select", value: config && isEnabled(config.enable) ? "1" : "0", options: [
         { label: "启用", value: "1" },
         { label: "禁用", value: "0" }
       ] },
+      { label: "限速依据", name: "limit_basis", type: "select", value: isDailyFixed ? "daily_fixed" : "ratio", options: [
+        { label: "流量使用比例", value: "ratio" },
+        { label: "当日固定流量", value: "daily_fixed" }
+      ], wide: true, onchange: function (value, form) {
+        updateAutoSpeedlimitBasisFields(form, value);
+      } },
       { label: "流量计算模式", name: "traffic_mode", type: "select", value: config ? config.traffic_mode : "daily", options: [
         { label: "当日流量", value: "daily" },
         { label: "总流量", value: "total" },
         { label: "双重检查", value: "both" }
-      ] },
+      ], hidden: isDailyFixed },
       { label: "每日流量基准", name: "daily_calc_mode", type: "select", value: config ? config.daily_calc_mode : "total", options: [
         { label: "基于总配额", value: "total" },
         { label: "基于剩余流量", value: "remaining" }
-      ], wide: true }
+      ], wide: true, hidden: isDailyFixed }
     ];
     for (var index = 1; index <= 5; index++) {
-      fields.push({ label: "等级 " + index + " 阈值(%)", name: "threshold_" + index, type: "number", min: 0, max: 100, step: 0.01, value: config ? config["threshold_" + index] : "" });
+      fields.push({ label: "等级 " + index + " 阈值(" + thresholdUnit + ")", name: "threshold_" + index, type: "number", min: 0.01, max: isDailyFixed ? 999.99 : 100, step: 0.01, value: config ? config["threshold_" + index] : "" });
       fields.push({ label: "等级 " + index + " 限速(Mbps)", name: "speed_" + index, type: "number", min: 1, step: 1, value: config ? config["speed_" + index] : "" });
     }
     modal("编辑自动限速配置", fields, function (data, close) {

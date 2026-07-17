@@ -10,7 +10,7 @@ class AutoSpeedlimitConfig extends Model
     protected $dateFormat = 'U'; // 使用Unix时间戳格式，与V2Board保持一致
 
     protected $fillable = [
-        'enable', 'traffic_mode', 'daily_calc_mode',
+        'enable', 'limit_basis', 'traffic_mode', 'daily_calc_mode',
         'threshold_1', 'speed_1', 'threshold_2', 'speed_2',
         'threshold_3', 'speed_3', 'threshold_4', 'speed_4',
         'threshold_5', 'speed_5'
@@ -74,6 +74,27 @@ class AutoSpeedlimitConfig extends Model
     }
 
     /**
+     * 获取限速依据描述
+     */
+    public function getLimitBasisDescription()
+    {
+        $descriptions = [
+            'ratio' => '流量使用比例',
+            'daily_fixed' => '当日固定流量'
+        ];
+
+        return $descriptions[$this->limit_basis ?: 'ratio'] ?? '未知';
+    }
+
+    /**
+     * 获取阈值单位
+     */
+    public function getThresholdUnit()
+    {
+        return $this->limit_basis === 'daily_fixed' ? 'GB' : '%';
+    }
+
+    /**
      * 获取每日计算模式描述
      */
     public function getDailyCalcModeDescription()
@@ -92,6 +113,9 @@ class AutoSpeedlimitConfig extends Model
     public function validateConfig()
     {
         $errors = [];
+        $isDailyFixed = $this->limit_basis === 'daily_fixed';
+        $maxThreshold = $isDailyFixed ? 999.99 : 100;
+        $thresholdUnit = $isDailyFixed ? 'GB' : '%';
         
         // 检查是否至少有一个有效的阈值配置
         $hasValidThreshold = false;
@@ -100,8 +124,8 @@ class AutoSpeedlimitConfig extends Model
             $speed = $this->{"speed_$i"};
             
             if ($threshold !== null && $speed !== null) {
-                if ($threshold <= 0 || $threshold > 100) {
-                    $errors[] = "阈值{$i}必须在0-100之间";
+                if ($threshold <= 0 || $threshold > $maxThreshold) {
+                    $errors[] = "阈值{$i}必须大于0且不超过{$maxThreshold}{$thresholdUnit}";
                 }
                 if ($speed <= 0) {
                     $errors[] = "限速{$i}必须大于0";
@@ -125,8 +149,10 @@ class AutoSpeedlimitConfig extends Model
         $speedLimits = $this->getSpeedLimitsArray();
         $summary = [
             'enabled' => $this->enable,
+            'limit_basis' => $this->getLimitBasisDescription(),
             'traffic_mode' => $this->getTrafficModeDescription(),
             'daily_calc_mode' => $this->getDailyCalcModeDescription(),
+            'threshold_unit' => $this->getThresholdUnit(),
             'levels_count' => count($speedLimits),
             'levels' => $speedLimits
         ];
@@ -144,6 +170,7 @@ class AutoSpeedlimitConfig extends Model
             // 创建默认配置
             $config = self::create([
                 'enable' => false,
+                'limit_basis' => 'ratio',
                 'traffic_mode' => 'daily',
                 'daily_calc_mode' => 'total',
                 'threshold_1' => 80.00,
