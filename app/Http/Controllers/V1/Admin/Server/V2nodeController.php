@@ -28,6 +28,7 @@ class V2nodeController extends Controller
             'network' => 'required|in:tcp,ws,grpc,http,httpupgrade,xhttp',
             'network_settings' => 'nullable|array',
             'trusted_x_forwarded_for' => 'nullable|array',
+            'trusted_x_forwarded_for.*' => 'string|max:128',
             'encryption' => 'nullable',
             'encryption_settings' => 'nullable|array',
             'disable_sni' => 'required|in:0,1',
