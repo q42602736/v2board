@@ -48,7 +48,8 @@ class CheckinController extends Controller
             'max_traffic' => 'required_if:reward_mode,random|integer|min:0|gte:min_traffic',
             'consecutive_bonus' => 'nullable|integer|min:0',
             'consecutive_days' => 'nullable|integer|min:0',
-            'enabled' => 'boolean'
+            'enabled' => 'boolean',
+            'reset_with_traffic' => 'boolean'
         ]);
 
         $planId = $request->input('plan_id');
@@ -75,6 +76,7 @@ class CheckinController extends Controller
             'consecutive_bonus' => $request->input('consecutive_bonus', 0),
             'consecutive_days' => $request->input('consecutive_days', 0),
             'enabled' => $request->input('enabled', true),
+            'reset_with_traffic' => $request->boolean('reset_with_traffic'),
         ];
 
         try {
@@ -250,6 +252,7 @@ class CheckinController extends Controller
             'configs.*.daily_traffic' => 'required|integer|min:0',
             'configs.*.consecutive_bonus' => 'integer|min:0',
             'configs.*.consecutive_days' => 'integer|min:1',
+            'configs.*.reset_with_traffic' => 'boolean',
         ]);
 
         $configs = $request->input('configs');
@@ -273,6 +276,7 @@ class CheckinController extends Controller
                     'consecutive_bonus' => $configData['consecutive_bonus'] ?? 0,
                     'consecutive_days' => $configData['consecutive_days'] ?? 7,
                     'enabled' => true,
+                    'reset_with_traffic' => (bool)($configData['reset_with_traffic'] ?? false),
                 ];
 
                 CheckinConfig::createOrUpdate($configData['plan_id'], $data);

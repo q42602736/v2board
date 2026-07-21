@@ -225,6 +225,7 @@ class UserController extends Controller
                         $user->plan_id = $plan->id;
                         $user->group_id = $plan->group_id;
                         $user->transfer_enable = $plan->transfer_enable * 1073741824;
+                        $user->checkin_traffic = 0;
                         $user->device_limit = $plan->device_limit;
                         $user->u = 0;
                         $user->d = 0;

@@ -52,6 +52,7 @@ class CheckinController extends Controller
                 'consecutive_bonus' => $config->consecutive_bonus,
                 'consecutive_bonus_formatted' => $config->consecutive_bonus_formatted,
                 'consecutive_days' => $config->consecutive_days,
+                'reset_with_traffic' => (bool)$config->reset_with_traffic,
                 'description' => $config->description,
             ] : null
         ];
@@ -109,6 +110,7 @@ class CheckinController extends Controller
             'consecutive_bonus' => $config->consecutive_bonus ?: 0,
             'consecutive_days' => $config->consecutive_days ?: 0,
             'enabled' => $config->enabled,
+            'reset_with_traffic' => (bool)$config->reset_with_traffic,
             'daily_traffic_formatted' => $config->daily_traffic_formatted,
             'min_traffic_formatted' => $config->min_traffic_formatted,
             'max_traffic_formatted' => $config->max_traffic_formatted,

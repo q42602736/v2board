@@ -161,6 +161,10 @@ class UserController extends Controller
             $authService->removeAllSession();
         }
 
+        if (isset($params['transfer_enable']) && (int)$params['transfer_enable'] !== (int)$user->transfer_enable) {
+            $params['checkin_traffic'] = 0;
+        }
+
         try {
             $user->update($params);
         } catch (\Exception $e) {

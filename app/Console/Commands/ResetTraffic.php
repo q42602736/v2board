@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Plan;
+use App\Models\CheckinConfig;
 use Illuminate\Console\Command;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -12,6 +13,7 @@ use Illuminate\Support\Facades\Redis;
 class ResetTraffic extends Command
 {
     protected $builder;
+    protected $checkinResetPlanIds = [];
     /**
      * The name and signature of the console command.
      *
@@ -47,6 +49,7 @@ class ResetTraffic extends Command
     {
         ini_set('memory_limit', -1);
         Redis::setex('traffic_reset_lock', 300, 1);
+        $this->checkinResetPlanIds = CheckinConfig::getResetWithTrafficPlanIds();
         $resetMethods = Plan::select(
             DB::raw("GROUP_CONCAT(`id`) as plan_ids"),
             DB::raw("reset_traffic_method as method")
@@ -120,10 +123,7 @@ class ResetTraffic extends Command
             }
         }
         $this->retryTransaction(function () use ($users) {
-            User::whereIn('id', $users)->update([
-                'u' => 0,
-                'd' => 0
-            ]);
+            $this->resetUsers(User::whereIn('id', $users));
         });
     }
 
@@ -131,10 +131,7 @@ class ResetTraffic extends Command
     {
         if ((string)date('md') === '0101') {
             $this->retryTransaction(function () use ($builder) {
-                $builder->update([
-                    'u' => 0,
-                    'd' => 0
-                ]);
+                $this->resetUsers($builder);
             });
         }
     }
@@ -143,10 +140,7 @@ class ResetTraffic extends Command
     {
         if ((string)date('d') === '01') {
             $this->retryTransaction(function () use ($builder) {
-                $builder->update([
-                    'u' => 0,
-                    'd' => 0
-                ]);
+                $this->resetUsers($builder);
             });
         }
     }
@@ -167,11 +161,41 @@ class ResetTraffic extends Command
 
         }
         $this->retryTransaction(function () use ($users) {
-            User::whereIn('id', $users)->update([
-                'u' => 0,
-                'd' => 0
-            ]);
+            $this->resetUsers(User::whereIn('id', $users));
         });
+    }
+
+    /**
+     * 重置用户流量，并按签到配置清除本周期累计的签到奖励。
+     */
+    private function resetUsers($builder): void
+    {
+        if (empty($this->checkinResetPlanIds)) {
+            $builder->update([
+                'u' => 0,
+                'd' => 0,
+            ]);
+            return;
+        }
+
+        with(clone($builder))
+            ->whereIn('plan_id', $this->checkinResetPlanIds)
+            ->update([
+                'u' => 0,
+                'd' => 0,
+                'transfer_enable' => DB::raw(
+                    'CASE WHEN transfer_enable > checkin_traffic '
+                    . 'THEN transfer_enable - checkin_traffic ELSE 0 END'
+                ),
+                'checkin_traffic' => 0,
+            ]);
+
+        with(clone($builder))
+            ->whereNotIn('plan_id', $this->checkinResetPlanIds)
+            ->update([
+                'u' => 0,
+                'd' => 0,
+            ]);
     }
 
     private function retryTransaction($callback)
