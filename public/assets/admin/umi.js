@@ -115843,6 +115843,27 @@
       "  resize: vertical;",
       "}",
       "",
+      ".activity-admin-checkbox {",
+      "  display: flex;",
+      "  align-items: center;",
+      "  gap: 0.625rem;",
+      "  min-height: 2.375rem;",
+      "  margin: 0;",
+      "  padding: 0.5rem 0.625rem;",
+      "  background: #f8f9fc;",
+      "  border: 1px solid #d4dcec;",
+      "  border-radius: 4px;",
+      "  cursor: pointer;",
+      "}",
+      "",
+      ".activity-admin-field .activity-admin-checkbox input[type='checkbox'] {",
+      "  width: 1rem;",
+      "  min-height: 1rem;",
+      "  margin: 0;",
+      "  padding: 0;",
+      "  accent-color: #0665d0;",
+      "}",
+      "",
       ".activity-admin-field select[multiple] {",
       "  min-height: 10rem;",
       "}",
@@ -116342,6 +116363,13 @@
         } else {
           input.value = field.value == null ? "" : String(field.value);
         }
+      } else if (field.type === "checkbox") {
+        input = h("input", {
+          name: field.name,
+          type: "checkbox",
+          value: "1"
+        });
+        input.checked = Boolean(field.value);
       } else if (field.type === "textarea") {
         input = h("textarea", {
           name: field.name,
@@ -116364,10 +116392,20 @@
           field.onchange(input.value, form);
         });
       }
-      var wrapper = h("div", { className: "activity-admin-field" + (field.wide ? " is-wide" : "") }, [
-        h("label", { text: field.label }),
-        input
-      ]);
+      var wrapper;
+      if (field.type === "checkbox") {
+        wrapper = h("div", { className: "activity-admin-field" + (field.wide ? " is-wide" : "") }, [
+          h("label", { className: "activity-admin-checkbox" }, [
+            input,
+            h("span", { text: field.label })
+          ])
+        ]);
+      } else {
+        wrapper = h("div", { className: "activity-admin-field" + (field.wide ? " is-wide" : "") }, [
+          h("label", { text: field.label }),
+          input
+        ]);
+      }
       if (field.hidden) {
         wrapper.style.display = "none";
       }
@@ -116445,7 +116483,7 @@
       ]));
 
       root.appendChild(card("配置列表", table([
-        "ID", "套餐", "奖励模式", "每日奖励", "连续奖励", "状态", "操作"
+        "ID", "套餐", "奖励模式", "每日奖励", "连续奖励", "流量有效期", "状态", "操作"
       ], configs.map(function (item) {
         return h("tr", {}, [
           h("td", { text: item.id }),
@@ -116453,6 +116491,7 @@
           h("td", {}, [badge(item.reward_mode === "random" ? "随机" : "固定", true, "is-info")]),
           h("td", { text: item.reward_mode === "random" ? fmtTraffic(item.min_traffic) + " - " + fmtTraffic(item.max_traffic) : fmtTraffic(item.daily_traffic) }),
           h("td", { text: item.reward_mode === "random" ? "无" : (Number(item.consecutive_days || 0) + " 天 / " + fmtTraffic(item.consecutive_bonus)) }),
+          h("td", {}, [badge(isEnabled(item.reset_with_traffic) ? "跟随套餐重置" : "永久累计", isEnabled(item.reset_with_traffic))]),
           h("td", {}, [badge(isEnabled(item.enabled) ? "启用" : "禁用", isEnabled(item.enabled))]),
           h("td", {}, [
             h("div", { className: "activity-admin-row-actions" }, [
@@ -116487,6 +116526,7 @@
       { label: "最大奖励", name: "max_traffic_mb", type: "number", min: 0, step: 10, value: isRandom ? Math.round(Number(item.max_traffic || 0) / MB) : 0, help: "随机模式使用，单位 MB。" },
       { label: "连续天数", name: "consecutive_days", type: "number", min: 0, step: 1, value: item ? item.consecutive_days : 7 },
       { label: "连续奖励", name: "consecutive_bonus_mb", type: "number", min: 0, step: 10, value: item ? Math.round(Number(item.consecutive_bonus || 0) / MB) : 0, help: "固定模式使用，单位 MB。" },
+      { label: "签到奖励跟随套餐流量重置", name: "reset_with_traffic", type: "checkbox", value: item && isEnabled(item.reset_with_traffic), wide: true, help: "默认永久累计；开启后在套餐流量重置时清除签到奖励。" },
       { label: "状态", name: "enabled", type: "select", value: item && !isEnabled(item.enabled) ? "0" : "1", options: [
         { label: "启用", value: "1" },
         { label: "禁用", value: "0" }
@@ -116495,7 +116535,8 @@
       var payload = {
         plan_id: data.plan_id ? Number(data.plan_id) : null,
         reward_mode: data.reward_mode,
-        enabled: data.enabled === "1"
+        enabled: data.enabled === "1",
+        reset_with_traffic: data.reset_with_traffic === "1"
       };
       if (data.reward_mode === "random") {
         payload.min_traffic = Number(data.min_traffic_mb || 0) * MB;

@@ -12,7 +12,8 @@ class CheckinConfig extends Model
     protected $casts = [
         'created_at' => 'timestamp',
         'updated_at' => 'timestamp',
-        'enabled' => 'boolean'
+        'enabled' => 'boolean',
+        'reset_with_traffic' => 'boolean'
     ];
 
     // 奖励模式常量
@@ -57,6 +58,31 @@ class CheckinConfig extends Model
         return self::where('enabled', true)
             ->orderBy('plan_id')
             ->get();
+    }
+
+    /**
+     * 获取需要在套餐流量重置时清除签到奖励的套餐ID
+     */
+    public static function getResetWithTrafficPlanIds(): array
+    {
+        $defaultConfig = self::whereNull('plan_id')
+            ->where('enabled', true)
+            ->first();
+        $planConfigs = self::whereNotNull('plan_id')
+            ->where('enabled', true)
+            ->get()
+            ->keyBy('plan_id');
+
+        return Plan::pluck('id')
+            ->filter(function ($planId) use ($defaultConfig, $planConfigs) {
+                $config = $planConfigs->get($planId) ?: $defaultConfig;
+                return $config && (bool)$config->reset_with_traffic;
+            })
+            ->map(function ($planId) {
+                return (int)$planId;
+            })
+            ->values()
+            ->all();
     }
 
     /**

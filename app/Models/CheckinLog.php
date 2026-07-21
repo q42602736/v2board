@@ -131,9 +131,15 @@ class CheckinLog extends Model
                 'consecutive_days' => $consecutiveDays,
             ]);
 
-            // 给用户增加流量
-            $user->transfer_enable += $rewardTraffic;
-            $user->save();
+            // 原子增加总额度和未清零签到额度，避免与流量重置并发时覆盖数据。
+            $rewardTraffic = (int)$rewardTraffic;
+            $updated = User::where('id', $userId)->update([
+                'transfer_enable' => \DB::raw("transfer_enable + {$rewardTraffic}"),
+                'checkin_traffic' => \DB::raw("checkin_traffic + {$rewardTraffic}"),
+            ]);
+            if ($updated !== 1) {
+                throw new \RuntimeException('更新用户签到流量失败');
+            }
 
             \DB::commit();
 
