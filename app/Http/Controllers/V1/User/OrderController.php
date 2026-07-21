@@ -121,7 +121,10 @@ class OrderController extends Controller
             abort(500, __('Subscription plan does not exist'));
         }
 
-        if ($user->plan_id !== $plan->id && !$planService->haveCapacity() && $request->input('period') !== 'reset_price') {
+        $hasActiveSamePlan = $user->plan_id == $plan->id
+            && ($user->expired_at === null || $user->expired_at > time());
+
+        if (!$hasActiveSamePlan && !$planService->haveCapacity() && $request->input('period') !== 'reset_price') {
             abort(500, __('Current product is sold out'));
         }
 
@@ -158,7 +161,7 @@ class OrderController extends Controller
             }
         }
 
-        if (!$plan->renew && $user->plan_id == $plan->id && $request->input('period') !== 'reset_price') {
+        if (!$plan->renew && $hasActiveSamePlan && $request->input('period') !== 'reset_price') {
             abort(500, __('This subscription cannot be renewed, please change to another subscription'));
         }
 
