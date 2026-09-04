@@ -87,7 +87,7 @@ class AutoSpeedlimitService
         Log::info("开始检查 {$checkedUsers} 个用户的流量使用情况");
         
         foreach ($users as $user) {
-            if ($this->processUserSpeedLimit($user, $config, $speedLimits)) {
+            if ($this->processUserSpeedLimit($user, $config, $speedLimits, true)) {
                 $limitedUsers++;
             }
         }
@@ -103,9 +103,14 @@ class AutoSpeedlimitService
     /**
      * 处理单个用户的限速
      */
-    private function processUserSpeedLimit($user, $config, $speedLimits)
+    private function processUserSpeedLimit($user, $config, $speedLimits, $respectManualRestoreExemption = true)
     {
         try {
+            // 手动恢复后24小时内，不再次触发自动限速
+            if ($respectManualRestoreExemption && $this->isManualRestoreExempt($user)) {
+                return false;
+            }
+
             // 计算流量使用情况
             $dailyPercent = 0;
             $totalPercent = 0;
@@ -151,6 +156,18 @@ class AutoSpeedlimitService
             ]);
             return false;
         }
+    }
+
+    /**
+     * 判断用户是否处于手动恢复后的24小时豁免期
+     */
+    private function isManualRestoreExempt($user)
+    {
+        $restoredAt = (int) $user->auto_speedlimit_manual_restore_at;
+
+        return $user->auto_speedlimit_status == 0
+            && $restoredAt > 0
+            && ($restoredAt + 24 * 3600) > time();
     }
     
     /**
@@ -328,16 +345,19 @@ class AutoSpeedlimitService
     /**
      * 恢复用户限速
      */
-    private function restoreUserSpeedLimit($user, $reason)
+    private function restoreUserSpeedLimit($user, $reason, $isManual = false)
     {
         $oldStatus = $user->auto_speedlimit_status;
         $oldSpeedLimit = $user->speed_limit;
         
-        DB::transaction(function () use ($user, $reason, $oldStatus, $oldSpeedLimit) {
+        DB::transaction(function () use ($user, $reason, $isManual, $oldStatus, $oldSpeedLimit) {
             // 恢复原始限速值
             $user->speed_limit = $user->original_speedlimit;
             $user->original_speedlimit = null;
             $user->auto_speedlimit_status = 0;
+            if ($isManual) {
+                $user->auto_speedlimit_manual_restore_at = time();
+            }
             $user->save();
             
             // 记录日志
@@ -400,7 +420,7 @@ class AutoSpeedlimitService
             return ['success' => false, 'message' => '没有有效的限速配置'];
         }
         
-        $changed = $this->processUserSpeedLimit($user, $config, $speedLimits);
+        $changed = $this->processUserSpeedLimit($user, $config, $speedLimits, false);
         
         return [
             'success' => true,
@@ -424,7 +444,7 @@ class AutoSpeedlimitService
             return ['success' => false, 'message' => '用户未被限速'];
         }
         
-        $this->restoreUserSpeedLimit($user, '手动恢复');
+        $this->restoreUserSpeedLimit($user, '手动恢复', true);
         
         return [
             'success' => true,
