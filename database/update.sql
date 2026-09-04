@@ -859,3 +859,6 @@ CHANGE `action_value` `action_value` text NULL AFTER `action`;
 
 ALTER TABLE `v2_server_v2node`
 ADD `trusted_x_forwarded_for` text COLLATE 'utf8mb4_general_ci' NULL COMMENT '信任XFF的代理标记头' AFTER `network_settings`;
+
+ALTER TABLE `v2_user`
+ADD `auto_speedlimit_manual_restore_at` bigint(20) NULL COMMENT '手动恢复自动限速时间（Unix时间戳）';
