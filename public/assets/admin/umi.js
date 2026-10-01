@@ -116521,9 +116521,9 @@
         { label: "固定奖励", value: "fixed" },
         { label: "随机奖励", value: "random" }
       ] },
-      { label: "每日奖励", name: "daily_traffic_mb", type: "number", min: 0, step: 10, value: isRandom ? 0 : Math.round(Number(item && item.daily_traffic || 0) / MB), help: "固定模式使用，单位 MB。" },
-      { label: "最小奖励", name: "min_traffic_mb", type: "number", min: 0, step: 10, value: isRandom ? Math.round(Number(item.min_traffic || 0) / MB) : 0, help: "随机模式使用，单位 MB。" },
-      { label: "最大奖励", name: "max_traffic_mb", type: "number", min: 0, step: 10, value: isRandom ? Math.round(Number(item.max_traffic || 0) / MB) : 0, help: "随机模式使用，单位 MB。" },
+      { label: "每日奖励（固定模式）", name: "daily_traffic_mb", type: "number", min: 0, step: 10, value: isRandom ? 0 : Math.round(Number(item && item.daily_traffic || 0) / MB), help: "固定模式使用，单位 MB；随机模式请修改最小/最大值。" },
+      { label: "最小奖励（随机模式）", name: "min_traffic_mb", type: "number", min: 0, step: 10, value: isRandom ? Math.round(Number(item.min_traffic || 0) / MB) : 0, help: "随机模式使用，单位 MB。" },
+      { label: "最大奖励（随机模式）", name: "max_traffic_mb", type: "number", min: 0, step: 10, value: isRandom ? Math.round(Number(item.max_traffic || 0) / MB) : 0, help: "随机模式使用，单位 MB。" },
       { label: "连续天数", name: "consecutive_days", type: "number", min: 0, step: 1, value: item ? item.consecutive_days : 7 },
       { label: "连续奖励", name: "consecutive_bonus_mb", type: "number", min: 0, step: 10, value: item ? Math.round(Number(item.consecutive_bonus || 0) / MB) : 0, help: "固定模式使用，单位 MB。" },
       { label: "签到奖励跟随套餐流量重置", name: "reset_with_traffic", type: "checkbox", value: item && isEnabled(item.reset_with_traffic), wide: true, help: "默认永久累计；开启后在套餐流量重置时清除签到奖励。" },
@@ -116533,6 +116533,7 @@
       ] }
     ], function (data, close) {
       var payload = {
+        id: item ? item.id : null,
         plan_id: data.plan_id ? Number(data.plan_id) : null,
         reward_mode: data.reward_mode,
         enabled: data.enabled === "1",
