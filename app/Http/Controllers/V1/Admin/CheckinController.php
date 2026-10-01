@@ -41,6 +41,7 @@ class CheckinController extends Controller
     public function saveConfig(Request $request)
     {
         $request->validate([
+            'id' => 'nullable|integer|exists:v2_checkin_config,id',
             'plan_id' => 'nullable|integer',
             'reward_mode' => 'required|in:fixed,random',
             'daily_traffic' => 'required_if:reward_mode,fixed|integer|min:0',
@@ -80,7 +81,30 @@ class CheckinController extends Controller
         ];
 
         try {
-            $config = CheckinConfig::createOrUpdate($planId, $data);
+            $configId = $request->input('id');
+            $config = $configId ? CheckinConfig::find($configId) : null;
+
+            if ($config) {
+                $duplicateQuery = CheckinConfig::where('id', '!=', $config->id);
+                if ($planId === null) {
+                    $duplicateQuery->whereNull('plan_id');
+                } else {
+                    $duplicateQuery->where('plan_id', $planId);
+                }
+
+                if ($duplicateQuery->exists()) {
+                    return response([
+                        'data' => ['success' => false, 'message' => '该套餐已有签到配置']
+                    ]);
+                }
+
+                $data['plan_id'] = $planId;
+                $data['updated_at'] = time();
+                $config->update($data);
+                $config = $config->fresh();
+            } else {
+                $config = CheckinConfig::createOrUpdate($planId, $data);
+            }
             
             return response([
                 'data' => ['success' => true, 'message' => '配置保存成功', 'config' => $config]
@@ -221,7 +245,6 @@ class CheckinController extends Controller
             }
 
             $plans = \App\Models\Plan::select('id', 'name', 'transfer_enable')
-                ->where('show', 1)
                 ->orderBy('sort')
                 ->get();
 

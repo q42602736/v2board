@@ -90,7 +90,13 @@ class CheckinConfig extends Model
      */
     public static function createOrUpdate($planId, $data)
     {
-        $config = self::where('plan_id', $planId)->first();
+        $query = self::query();
+        if ($planId === null) {
+            $query->whereNull('plan_id');
+        } else {
+            $query->where('plan_id', $planId);
+        }
+        $config = $query->first();
         
         $data['plan_id'] = $planId;
         $data['updated_at'] = time();
