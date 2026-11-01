@@ -175,10 +175,11 @@ class ClashMeta
             $array['tls'] = true;
             $tlsSettings = $server['tlsSettings'] ?? ($server['tls_settings'] ?? null);
             if ($tlsSettings) {
-                if (isset($tlsSettings['allowInsecure']) && !empty($tlsSettings['allowInsecure']))
-                    $array['skip-cert-verify'] = ($tlsSettings['allowInsecure'] ? true : false);
-                if (isset($tlsSettings['serverName']) && !empty($tlsSettings['serverName']))
-                    $array['servername'] = $tlsSettings['serverName'];
+                $__ai = $tlsSettings['allow_insecure'] ?? $tlsSettings['allowInsecure'] ?? '';
+                $array['skip-cert-verify'] = ($__ai === '1' || $__ai === 1 || $__ai === true || $__ai === 'true');
+                $__sn = $tlsSettings['server_name'] ?? $tlsSettings['serverName'] ?? '';
+                if (!empty($__sn))
+                    $array['servername'] = $__sn;
                 if (!empty($tlsSettings['ech'])) {
                     if ($tlsSettings['ech'] === 'cloudflare') {
                         $array['ech-opts'] = [
@@ -254,6 +255,7 @@ class ClashMeta
                    $array['reality-opts'] = [];
                    $array['reality-opts']['public-key'] = $tlsSettings['public_key'];
                    $array['reality-opts']['short-id'] = $tlsSettings['short_id'];
+                   $array['reality-opts']['support-x25519mlkem768'] = true;
                 }
                 if (!empty($tlsSettings['ech'])) {
                     if ($tlsSettings['ech'] === 'cloudflare') {

@@ -7,7 +7,9 @@ class StaffRoute
 {
     public function map(Registrar $router)
     {
-        $router->group([
+
+        // DISABLED: staff 接口未完成且有越权风险（上游 3cb99021）
+        /*        $router->group([
             'prefix' => 'staff',
             'middleware' => 'staff'
         ], function ($router) {
@@ -28,5 +30,6 @@ class StaffRoute
             $router->post('/notice/update', 'V1\\Admin\\NoticeController@update');
             $router->post('/notice/drop', 'V1\\Admin\\NoticeController@drop');
         });
+        */
     }
 }

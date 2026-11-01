@@ -42,6 +42,10 @@ class AuthService
     public static function decryptAuthData($jwt)
     {
         try {
+            // 防止 ?auth_data[is_staff]=1 这类数组注入绕过缓存/JWT 校验
+            if (!is_string($jwt) || $jwt === '') {
+                return false;
+            }
             if (!Cache::has($jwt)) {
                 $data = (array)JWT::decode($jwt, new Key(config('app.key'), 'HS256'));
                 if (!self::checkSession($data['id'], $data['session'])) return false;
