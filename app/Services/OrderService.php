@@ -38,10 +38,10 @@ class OrderService
                 DB::rollBack();
                 abort(500, '充值失败');
             }
-            $order->status = 3;
-            if (!$order->save()) {
+            // 条件更新：仅 status=1（已支付待开通）可置 3，避免重复回调重复开通
+            if (!Order::where('id', $order->id)->where('status', 1)->update(['status' => 3])) {
                 DB::rollBack();
-                abort(500, '充值失败');
+                return;
             }
             DB::commit();
             return;
@@ -92,10 +92,10 @@ class OrderService
             DB::rollBack();
             abort(500, '开通失败');
         }
-        $order->status = 3;
-        if (!$order->save()) {
+        // 条件更新：仅 status=1（已支付待开通）可置 3，避免重复回调重复开通
+        if (!Order::where('id', $order->id)->where('status', 1)->update(['status' => 3])) {
             DB::rollBack();
-            abort(500, '开通失败');
+            return;
         }
 
         DB::commit();

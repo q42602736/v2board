@@ -5,6 +5,7 @@ use App\Utils\Helper;
 
 class Singbox
 {
+    use FillsGroups;
     public $flag = 'sing';
     private $servers;
     private $user;
@@ -97,6 +98,7 @@ class Singbox
             }
         }
         unset($outbound);
+        $this->fillEmptyGroups($proxies);
         $outbounds = array_merge($this->config['outbounds'], $proxies);
         return $outbounds;
     }

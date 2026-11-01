@@ -31,8 +31,8 @@ dns:
     - 119.29.29.29
     - 114.114.114.114
   fallback:
-    - 1.1.1.1
-    - 8.8.8.8
+    - https://cloudflare-dns.com/dns-query
+    - https://dns.google/dns-query
   fallback-filter:
     geoip: true
     geoip-code: CN
@@ -40,18 +40,22 @@ dns:
       - gfw
     ipcidr:
       - 240.0.0.0/4
+      - 0.0.0.0/32
+      - 127.0.0.1/32
+      - 100.64.0.0/10
     domain:
       - '+.google.com'
       - '+.facebook.com'
       - '+.youtube.com'
+    fallback-lazy-query: true
 
 
 proxies:
 
 proxy-groups:
   - { name: "$app_name", type: select, proxies: ["自动选择", "故障转移"] }
-  - { name: "自动选择", type: url-test, proxies: [], url: "http://www.gstatic.com/generate_204", interval: 86400 }
-  - { name: "故障转移", type: fallback, proxies: [], url: "http://www.gstatic.com/generate_204", interval: 7200 }
+  - { name: "自动选择", type: url-test, proxies: [], url: "https://www.gstatic.com/generate_204", interval: 86400 }
+  - { name: "故障转移", type: fallback, proxies: [], url: "https://www.gstatic.com/generate_204", interval: 7200 }
 
 rules:
   # 自定义规则

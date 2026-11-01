@@ -8,31 +8,28 @@ bind-address: "*"
 mode: rule
 log-level: info
 external-controller: 127.0.0.1:9090
-
+ipv6: true
 dns:
   enable: true
-  # listen: 0.0.0.0:53
-  ipv6: false
+  ipv6: true
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  use-hosts: true
+
 
   default-nameserver:
     - 223.5.5.5
     - 119.29.29.29
-    - 114.114.114.114
-  enhanced-mode: fake-ip
-  fake-ip-range: 198.18.0.1/16
-  use-hosts: true
-  respect-rules: true
-  proxy-server-nameserver:
-    - 223.5.5.5
-    - 119.29.29.29
-    - 114.114.114.114
-  nameserver:
-    - 223.5.5.5
-    - 119.29.29.29
-    - 114.114.114.114
+
+
+    
+    
+
+
   fallback:
-    - 1.1.1.1
-    - 8.8.8.8
+    - https://cloudflare-dns.com/dns-query
+    - https://dns.google/dns-query
+
   fallback-filter:
     geoip: true
     geoip-code: CN
@@ -40,10 +37,14 @@ dns:
       - gfw
     ipcidr:
       - 240.0.0.0/4
+      - 0.0.0.0/32
+      - 127.0.0.1/32
+      - 100.64.0.0/10
     domain:
       - '+.google.com'
       - '+.facebook.com'
       - '+.youtube.com'
+    fallback-lazy-query: true
 
 
 proxies:
@@ -94,7 +95,7 @@ proxy-groups:
     type: url-test
     proxies:
       - "/.*/"
-    url: "http://www.gstatic.com/generate_204"
+    url: "https://www.gstatic.com/generate_204"
     interval: 300
     icon: "https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Proxy.png"
 
@@ -103,7 +104,7 @@ proxy-groups:
     type: url-test
     proxies:
       - "/(香港|HK|Hong|🇭🇰)/"
-    url: "http://www.gstatic.com/generate_204"
+    url: "https://www.gstatic.com/generate_204"
     interval: 300
     icon: "https://fastly.jsdelivr.net/gh/clash-verge-rev/clash-verge-rev.github.io@main/docs/assets/icons/flags/hk.svg"
 
@@ -111,7 +112,7 @@ proxy-groups:
     type: url-test
     proxies:
       - "/(台湾|TW|Taiwan|Wan|🇨🇳|🇹🇼)/"
-    url: "http://www.gstatic.com/generate_204"
+    url: "https://www.gstatic.com/generate_204"
     interval: 300
     icon: "https://fastly.jsdelivr.net/gh/clash-verge-rev/clash-verge-rev.github.io@main/docs/assets/icons/flags/tw.svg"
 
@@ -119,7 +120,7 @@ proxy-groups:
     type: url-test
     proxies:
       - "/(新加坡|狮城|SG|Singapore|🇸🇬)/"
-    url: "http://www.gstatic.com/generate_204"
+    url: "https://www.gstatic.com/generate_204"
     interval: 300
     icon: "https://fastly.jsdelivr.net/gh/clash-verge-rev/clash-verge-rev.github.io@main/docs/assets/icons/flags/sg.svg"
 
@@ -127,7 +128,7 @@ proxy-groups:
     type: url-test
     proxies:
       - "/(日本|JP|Japan|🇯🇵)/"
-    url: "http://www.gstatic.com/generate_204"
+    url: "https://www.gstatic.com/generate_204"
     interval: 300
     icon: "https://fastly.jsdelivr.net/gh/clash-verge-rev/clash-verge-rev.github.io@main/docs/assets/icons/flags/jp.svg"
 
@@ -135,7 +136,7 @@ proxy-groups:
     type: url-test
     proxies:
       - "/(美国|US|United States|America|🇺🇸)/"
-    url: "http://www.gstatic.com/generate_204"
+    url: "https://www.gstatic.com/generate_204"
     interval: 300
     icon: "https://fastly.jsdelivr.net/gh/clash-verge-rev/clash-verge-rev.github.io@main/docs/assets/icons/flags/us.svg"
 
