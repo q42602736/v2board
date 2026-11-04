@@ -14,6 +14,7 @@ class TrafficRateService
      * 服务器表列表
      */
     protected $serverTables = [
+        'v2_server_v2node',
         'v2_server_hysteria',
         'v2_server_shadowsocks',
         'v2_server_trojan',
