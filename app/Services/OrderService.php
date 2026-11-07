@@ -68,7 +68,7 @@ class OrderService
                 $this->buyByOneTime($order, $plan);
                 break;
             case 'reset_price':
-                $this->buyByResetTraffic();
+                $this->buyByResetTraffic($plan);
                 break;
             default:
                 $this->buyByPeriod($order, $plan);
@@ -295,10 +295,21 @@ class OrderService
         $this->user->speed_limit = $speedLimit;
     }
 
-    private function buyByResetTraffic()
+    /**
+     * 重置流量。
+     *
+     * 传入 $plan 时（购买「流量重置包」）额外把总quota 归位到
+     * 「套餐额度 + 已累计签到额度」，避免历史加成（一次性补偿、
+     * 换套餐前的残留等）被越滚越大；签到奖励本身保留，不清零。
+     */
+    private function buyByResetTraffic($plan = null)
     {
         $this->user->u = 0;
         $this->user->d = 0;
+        if ($plan) {
+            $this->user->transfer_enable = (int)$plan->transfer_enable * 1073741824
+                + (int)$this->user->checkin_traffic;
+        }
     }
 
     private function buyByPeriod(Order $order, Plan $plan)
