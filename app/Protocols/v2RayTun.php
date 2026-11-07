@@ -80,7 +80,8 @@ class v2RayTun
         $parts = [];
         if (isset($user['u'])) $parts[] = "upload={$user['u']}";
         if (isset($user['d'])) $parts[] = "download={$user['d']}";
-        if (isset($user['transfer_enable'])) $parts[] = "total={$user['transfer_enable']}";
+        $totalTransferEnable = (int)($user['transfer_enable'] ?? 0) + (int)($user['checkin_balance'] ?? 0);
+        if (isset($user['transfer_enable'])) $parts[] = "total={$totalTransferEnable}";
         if (isset($user['expired_at'])) $parts[] = "expire={$user['expired_at']}";
         return implode('; ', $parts);
     }

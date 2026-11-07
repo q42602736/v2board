@@ -23,7 +23,7 @@ class QuantumultX
         $uri = '';
         $upload = $user['u'] ?? 0;
         $download = $user['d'] ?? 0;
-        $total = $user['transfer_enable'] ?? 0;
+        $total = (int)($user['transfer_enable'] ?? 0) + (int)($user['checkin_balance'] ?? 0);
         $expire = $user['expired_at'] ?? 0;
         $uuid = $user['uuid'] ?? '';
 

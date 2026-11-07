@@ -51,7 +51,7 @@ class Checkin extends Telegram {
             $stats = CheckinLog::getUserStats($user->id);
             $messageText .= "📈 *累计数据：*\n";
             $messageText .= "• 总签到天数：{$stats['total_days']} 天\n";
-            $messageText .= "• 累计流量：{$stats['total_traffic_formatted']}\n";
+            $messageText .= "• 签到余额：{$stats['total_traffic_formatted']}\n";
             
             // 获取签到配置信息
             $config = CheckinConfig::getConfigByPlanId($user->plan_id ?? null);
@@ -94,7 +94,7 @@ class Checkin extends Telegram {
                 $stats = CheckinLog::getUserStats($user->id);
                 $messageText .= "📈 *累计数据：*\n";
                 $messageText .= "• 总签到天数：{$stats['total_days']} 天\n";
-                $messageText .= "• 累计流量：{$stats['total_traffic_formatted']}\n";
+                $messageText .= "• 签到余额：{$stats['total_traffic_formatted']}\n";
 
                 $messageText .= "\n💡 明天记得继续签到哦！";
             } else {

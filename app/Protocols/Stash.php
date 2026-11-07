@@ -22,7 +22,8 @@ class Stash
         $servers = $this->servers;
         $user = $this->user;
         $appName = config('v2board.app_name', 'V2Board');
-        header("subscription-userinfo: upload={$user['u']}; download={$user['d']}; total={$user['transfer_enable']}; expire={$user['expired_at']}");
+        $totalTransferEnable = (int)$user['transfer_enable'] + (int)($user['checkin_balance'] ?? 0);
+        header("subscription-userinfo: upload={$user['u']}; download={$user['d']}; total={$totalTransferEnable}; expire={$user['expired_at']}");
         header('profile-update-interval: 24');
         header("content-disposition: filename*=UTF-8''".rawurlencode($appName));
         // 暂时使用clash配置文件，后续根据Stash更新情况更新

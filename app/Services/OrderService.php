@@ -307,8 +307,8 @@ class OrderService
         $this->user->u = 0;
         $this->user->d = 0;
         if ($plan) {
-            $this->user->transfer_enable = (int)$plan->transfer_enable * 1073741824
-                + (int)$this->user->checkin_traffic;
+            // 只把套餐额度归位到套餐值；签到余额是独立账户，不参与重置。
+            $this->user->transfer_enable = (int)$plan->transfer_enable * 1073741824;
         }
     }
 
@@ -344,7 +344,7 @@ class OrderService
     {
         $transfer_enable = $plan->transfer_enable;
         if (!$order->surplus_order_ids) {
-            $notUsedTraffic = ($this->user->transfer_enable - ($this->user->u + $this->user->d)) / 1073741824;
+            $notUsedTraffic = ($this->user->getTotalTransferEnable() - ($this->user->u + $this->user->d)) / 1073741824;
             if ($notUsedTraffic > 0 && $this->user->expired_at == NULL) {
                 $transfer_enable += $notUsedTraffic;
             }

@@ -131,11 +131,12 @@ class CheckinLog extends Model
                 'consecutive_days' => $consecutiveDays,
             ]);
 
-            // 原子增加总额度和未清零签到额度，避免与流量重置并发时覆盖数据。
+            // 签到流量独立成账：只累加到签到余额，不混进套餐额度。
+            // checkin_traffic 仅作历史累计发放记录（展示用），checkin_balance 才是可用余额。
             $rewardTraffic = (int)$rewardTraffic;
             $updated = User::where('id', $userId)->update([
-                'transfer_enable' => \DB::raw("transfer_enable + {$rewardTraffic}"),
                 'checkin_traffic' => \DB::raw("checkin_traffic + {$rewardTraffic}"),
+                'checkin_balance' => \DB::raw("checkin_balance + {$rewardTraffic}"),
             ]);
             if ($updated !== 1) {
                 throw new \RuntimeException('更新用户签到流量失败');
@@ -174,7 +175,10 @@ class CheckinLog extends Model
     public static function getUserStats($userId)
     {
         $totalDays = self::where('user_id', $userId)->count();
-        $totalTraffic = self::where('user_id', $userId)->sum('reward_traffic');
+        // 展示当前可用的签到余额（独立账户、只减不增），
+        // 不再展示历史累计发放量，避免用户误以为额度在一直增长。
+        $user = User::find($userId);
+        $totalTraffic = $user ? (int)$user->checkin_balance : 0;
         $consecutiveDays = self::getConsecutiveDays($userId);
         $todayChecked = self::isTodayCheckedIn($userId);
 
