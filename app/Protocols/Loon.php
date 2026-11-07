@@ -22,7 +22,8 @@ class Loon
         $user = $this->user;
 
         $uri = '';
-        header("Subscription-Userinfo: upload={$user['u']}; download={$user['d']}; total={$user['transfer_enable']}; expire={$user['expired_at']}");
+        $totalTransferEnable = (int)$user['transfer_enable'] + (int)($user['checkin_balance'] ?? 0);
+        header("Subscription-Userinfo: upload={$user['u']}; download={$user['d']}; total={$totalTransferEnable}; expire={$user['expired_at']}");
 
         foreach ($servers as $item) {
             if (($item['type'] ?? null) === 'v2node' && isset($item['protocol'])) {

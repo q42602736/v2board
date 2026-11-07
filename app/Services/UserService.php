@@ -145,7 +145,7 @@ class UserService
     
     public function isAvailable(User $user)
     {
-        if (!$user->banned && $user->transfer_enable && ($user->expired_at > time() || $user->expired_at === NULL)) {
+        if (!$user->banned && $user->getTotalTransferEnable() && ($user->expired_at > time() || $user->expired_at === NULL)) {
             return true;
         }
         return false;
@@ -153,7 +153,7 @@ class UserService
 
     public function getAvailableUsers()
     {
-        return User::whereRaw('u + d < transfer_enable')
+        return User::whereRaw('u + d < transfer_enable + checkin_balance')
             ->where(function ($query) {
                 $query->where('expired_at', '>=', time())
                 ->orWhereNull('expired_at');
@@ -164,7 +164,7 @@ class UserService
 
     public function getDeviceLimitedUsers()
     {
-        return User::whereRaw('u + d < transfer_enable')
+        return User::whereRaw('u + d < transfer_enable + checkin_balance')
             ->where(function ($query) {
                 $query->where('expired_at', '>=', time())
                 ->orWhereNull('expired_at');

@@ -22,7 +22,8 @@ class ClashNyanpasu
         $servers = $this->servers;
         $user = $this->user;
         $appName = config('v2board.app_name', 'V2Board');
-        header("subscription-userinfo: upload={$user['u']}; download={$user['d']}; total={$user['transfer_enable']}; expire={$user['expired_at']}");
+        $totalTransferEnable = (int)$user['transfer_enable'] + (int)($user['checkin_balance'] ?? 0);
+        header("subscription-userinfo: upload={$user['u']}; download={$user['d']}; total={$totalTransferEnable}; expire={$user['expired_at']}");
         header('profile-update-interval: 24');
         header("content-disposition:attachment;filename*=UTF-8''".rawurlencode($appName));
         $defaultConfig = base_path() . '/resources/rules/default.clash.yaml';

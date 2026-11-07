@@ -59,7 +59,8 @@ class ClientController extends Controller
         if (!isset($servers[0])) return;
         if (!(int)config('v2board.show_info_to_server_enable', 0)) return;
         $useTraffic = $user['u'] + $user['d'];
-        $totalTraffic = $user['transfer_enable'];
+        // 可用总额度 = 套餐额度 + 签到余额（签到流量独立成账，优先消耗）
+        $totalTraffic = (int)$user['transfer_enable'] + (int)($user['checkin_balance'] ?? 0);
         $remainingTraffic = Helper::trafficConvert($totalTraffic - $useTraffic);
         $expiredDate = $user['expired_at'] ? date('Y-m-d', $user['expired_at']) : '长期有效';
         $userService = new UserService();

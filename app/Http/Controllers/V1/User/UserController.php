@@ -269,6 +269,7 @@ class UserController extends Controller
             ->select([
                 'email',
                 'transfer_enable',
+                'checkin_balance',
                 'device_limit',
                 'last_login_at',
                 'created_at',
@@ -290,6 +291,9 @@ class UserController extends Controller
             abort(500, __('The user does not exist'));
         }
         $user['avatar_url'] = 'https://cravatar.cn/avatar/' . md5($user->email) . '?s=64&d=identicon';
+        // 前端用自己的 transfer_enable 算剩余流量，这里直接叠加签到余额，保证展示正确。
+        $user['transfer_enable_base'] = (int)$user['transfer_enable'];
+        $user['transfer_enable'] = (int)$user['transfer_enable'] + (int)$user['checkin_balance'];
         return response([
             'data' => $user
         ]);
@@ -322,6 +326,7 @@ class UserController extends Controller
                 'u',
                 'd',
                 'transfer_enable',
+                'checkin_balance',
                 'last_day_t',
                 'device_limit',
                 'email',
@@ -345,6 +350,10 @@ class UserController extends Controller
             $countalive = $ips_array['alive_ip'];
         }
         $user['alive_ip'] = $countalive;
+
+        // 前端用 transfer_enable 算剩余流量，叠加签到余额以展示真实可用额度。
+        $user['transfer_enable_base'] = (int)$user['transfer_enable'];
+        $user['transfer_enable'] = (int)$user['transfer_enable'] + (int)$user['checkin_balance'];
 
         $user['subscribe_url'] = Helper::getSubscribeUrl($user['token']);
 

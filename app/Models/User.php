@@ -60,11 +60,12 @@ class User extends Model
      */
     public function getTrafficUsagePercent()
     {
-        if ($this->transfer_enable == 0) {
+        $transferEnable = $this->getTotalTransferEnable();
+        if ($transferEnable == 0) {
             return 0;
         }
         $total = $this->u + $this->d;
-        $percent = ($total / $this->transfer_enable) * 100;
+        $percent = ($total / $transferEnable) * 100;
         return round($percent, 2);
     }
 
@@ -79,9 +80,20 @@ class User extends Model
     /**
      * 剩余流量（字节）
      */
+    /**
+     * 套餐额度 + 签到余额 = 用户实际可用总额度
+     */
+    public function getTotalTransferEnable()
+    {
+        return (int)$this->transfer_enable + (int)$this->checkin_balance;
+    }
+
+    /**
+     * 剩余流量：优先消耗签到余额，签到用完即止
+     */
     public function getRemainingTraffic()
     {
-        return max(0, $this->transfer_enable - ($this->u + $this->d));
+        return max(0, $this->getTotalTransferEnable() - ($this->u + $this->d));
     }
 
     /**

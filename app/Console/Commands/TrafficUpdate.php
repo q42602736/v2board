@@ -52,10 +52,14 @@ class TrafficUpdate extends Command
             return;
         }
 
-        $users = User::whereIn('id', array_keys($downloads))->get(['id', 'u', 'd']);
+        // 只按下载键取用户会丢掉「只有上传、没有下载」的那部分流量
+        // （上游原有缺陷：Redis 里已删除、但用户没被处理）。这里取并集。
+        $userIds = array_unique(array_merge(array_keys($uploads), array_keys($downloads)));
+        $users = User::whereIn('id', $userIds)->get(['id', 'u', 'd', 'checkin_balance']);
         $time = time();
         $casesU = [];
         $casesD = [];
+        $casesCb = [];
         $idList = [];
 
         foreach ($users as $user) {
@@ -64,12 +68,17 @@ class TrafficUpdate extends Command
 
             $casesU[] = "WHEN {$user->id} THEN " . ($user->u + $upload);
             $casesD[] = "WHEN {$user->id} THEN " . ($user->d + $download);
+            // 签到流量独立成账并优先消耗：本tick的增量先从签到余额里扣，扣完才走套餐额度。
+            $delta = $upload + $download;
+            $newCheckinBalance = max(0, (int)$user->checkin_balance - $delta);
+            $casesCb[] = "WHEN {$user->id} THEN {$newCheckinBalance}";
             $idList[] = $user->id;
         }
         $idListStr = implode(',', $idList);
         $casesUStr = implode(' ', $casesU);
         $casesDStr = implode(' ', $casesD);
-        $sql = "UPDATE v2_user SET u = CASE id {$casesUStr} END, d = CASE id {$casesDStr} END, t = {$time}, updated_at = {$time} WHERE id IN ({$idListStr})";
+        $casesCbStr = implode(' ', $casesCb);
+        $sql = "UPDATE v2_user SET u = CASE id {$casesUStr} END, d = CASE id {$casesDStr} END, checkin_balance = CASE id {$casesCbStr} END, t = {$time}, updated_at = {$time} WHERE id IN ({$idListStr})";
         try {
             DB::beginTransaction();
             DB::statement($sql);

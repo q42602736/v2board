@@ -170,32 +170,16 @@ class ResetTraffic extends Command
      */
     private function resetUsers($builder): void
     {
-        if (empty($this->checkinResetPlanIds)) {
-            $builder->update([
-                'u' => 0,
-                'd' => 0,
-            ]);
-            return;
-        }
-
-        with(clone($builder))
-            ->whereIn('plan_id', $this->checkinResetPlanIds)
-            ->update([
-                'u' => 0,
-                'd' => 0,
-                'transfer_enable' => DB::raw(
-                    'CASE WHEN transfer_enable > checkin_traffic '
-                    . 'THEN transfer_enable - checkin_traffic ELSE 0 END'
-                ),
-                'checkin_traffic' => 0,
-            ]);
-
-        with(clone($builder))
-            ->whereNotIn('plan_id', $this->checkinResetPlanIds)
-            ->update([
-                'u' => 0,
-                'd' => 0,
-            ]);
+        // 周期重置只清本周期已用量（u/d）。
+        // 签到余额 checkin_balance 是独立账户、只减不增：重置包与每月重置都不补回、也不清空；
+        // 套餐额度 transfer_enable 同样不动，避免把签到额度重复结算。
+        // checkin_traffic 只是「历史累计发放」的展示字段，每月随周期重置归零，
+        // 避免这个数字无限膨胀、让用户误以为可用流量越来越多。
+        $builder->update([
+            'u' => 0,
+            'd' => 0,
+            'checkin_traffic' => 0,
+        ]);
     }
 
     private function retryTransaction($callback)

@@ -26,7 +26,7 @@ class Shadowsocks
         $subs['bytes_remaining'] = '';
 
         $bytesUsed = $user['u'] + $user['d'];
-        $bytesRemaining = $user['transfer_enable'] - $bytesUsed;
+        $bytesRemaining = ((int)$user['transfer_enable'] + (int)($user['checkin_balance'] ?? 0)) - $bytesUsed;
 
         foreach ($servers as $item) {
             if ($item['type'] === 'shadowsocks'
