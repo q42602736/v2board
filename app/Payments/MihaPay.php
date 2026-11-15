@@ -66,49 +66,42 @@ class MihaPay
 
         $result = $this->post($this->getApiUrl(), $params);
 
-        if ((int) ($result['code'] ?? 0) !== 1) {
-            $message = trim((string) ($result['msg'] ?? ''));
-            if ($message === '') {
-                $message = '米哈支付下单失败';
-            }
-
-            // 网关对同一个 out_trade_no 只允许下单一次：首次即使取码失败
-            // （渠道异常、出码失败）也会占用该单号，用户再次支付就报
-            // 「商户订单号已存在」，订单从此永远付不了。
-            // 这里换一个新单号重试，并把旧单号记入别名表防止掉单。
-            $lastMessage = $message;
-            $retryable = $this->isRetryableFailure($message);
-            for ($attempt = 0; $retryable && $attempt < 2; $attempt++) {
-                $newTradeNo = $this->rotateTradeNo($order, (string) $order['trade_no']);
-                if ($newTradeNo === null) {
+        // 网关对同一个 out_trade_no 只允许下单一次：首次即使取码失败
+        // （渠道异常、出码失败）也会占用该单号，用户再次支付就报
+        // 「商户订单号已存在」，订单从此永远付不了。
+        // 失败时换新单号重试，旧单号记入别名表防止掉单。
+        if ((int) ($result['code'] ?? 0) !== 1
+            && $this->isRetryableFailure(trim((string) ($result['msg'] ?? '')))) {
+            for ($attempt = 0; $attempt < 2; $attempt++) {
+                if (!$this->reorderWithNewTradeNo($order, $params, $key)) {
                     break;
                 }
-                // return_url 里带着旧单号，换号后同步替换，支付完回来才能看到本单
-                if (!empty($order['return_url'])) {
-                    $order['return_url'] = str_replace(
-                        (string) $params['out_trade_no'],
-                        $newTradeNo,
-                        (string) $order['return_url']
-                    );
-                    $params['return_url'] = $order['return_url'];
-                }
-                $order['trade_no'] = $newTradeNo;
-                $params['out_trade_no'] = $newTradeNo;
-                $params['sign'] = $this->makeSign($params, $key);
-
-                usleep(200000);
                 $result = $this->post($this->getApiUrl(), $params);
                 if ((int) ($result['code'] ?? 0) === 1) {
                     break;
                 }
-                $lastMessage = trim((string) ($result['msg'] ?? ''));
-                if ($lastMessage === '') {
-                    $lastMessage = '米哈支付下单失败';
+                if (!$this->isRetryableFailure(trim((string) ($result['msg'] ?? '')))) {
+                    break;
                 }
             }
+        }
 
+        if ((int) ($result['code'] ?? 0) !== 1) {
+            $message = trim((string) ($result['msg'] ?? ''));
+            abort(500, $message === '' ? '米哈支付下单失败' : $message);
+        }
+
+        // 网关按 out_trade_no 缓存收银台链接：同一单号先下过微信，用户再切
+        // 支付宝时拿到的还是微信那条链接，点开就报「渠道参数校验不通过」。
+        // 链接渠道和所选支付方式不一致时换号重新下单。
+        for ($attempt = 0; $attempt < 2 && $this->isChannelMismatch($type, $result); $attempt++) {
+            if (!$this->reorderWithNewTradeNo($order, $params, $key)) {
+                break;
+            }
+            $result = $this->post($this->getApiUrl(), $params);
             if ((int) ($result['code'] ?? 0) !== 1) {
-                abort(500, $lastMessage);
+                $message = trim((string) ($result['msg'] ?? ''));
+                abort(500, $message === '' ? '米哈支付下单失败' : $message);
             }
         }
 
@@ -163,6 +156,56 @@ class MihaPay
         }
 
         return (bool) preg_match('/已存在|重复|出码|系统|繁忙|超时|错误|失败|异常|empty|error/i', $message);
+    }
+
+    /**
+     * 换新单号并就地更新下单参数，供失败重试与渠道纠正复用。
+     */
+    private function reorderWithNewTradeNo(array &$order, array &$params, $key)
+    {
+        $newTradeNo = $this->rotateTradeNo($order, (string) $order['trade_no']);
+        if ($newTradeNo === null) {
+            return false;
+        }
+
+        // return_url 里带着旧单号，换号后同步替换，支付完回来才能看到本单
+        if (!empty($order['return_url'])) {
+            $order['return_url'] = str_replace(
+                (string) $params['out_trade_no'],
+                $newTradeNo,
+                (string) $order['return_url']
+            );
+            $params['return_url'] = $order['return_url'];
+        }
+
+        $order['trade_no'] = $newTradeNo;
+        $params['out_trade_no'] = $newTradeNo;
+        $params['sign'] = $this->makeSign($params, $key);
+
+        usleep(200000);
+        return true;
+    }
+
+    /**
+     * 收银台链接的渠道和用户所选支付方式是否不一致。
+     */
+    private function isChannelMismatch($type, array $result)
+    {
+        $type = (string) $type;
+        if ($type === '') {
+            return false;
+        }
+        $url = strtolower((string) ($result['qrcode'] ?? ''));
+        if ($url === '') {
+            return false;
+        }
+        if (strpos($url, 'youzan') !== false || strpos($url, 'weixin') !== false) {
+            return $type !== 'wxpay';
+        }
+        if (strpos($url, 'zfb') !== false || strpos($url, 'alipay') !== false) {
+            return $type !== 'alipay';
+        }
+        return false;
     }
 
     /**
