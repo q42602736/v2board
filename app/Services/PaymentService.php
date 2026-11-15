@@ -57,6 +57,7 @@ class PaymentService
         return $this->payment->pay([
             'notify_url' => $notifyUrl,
             'return_url' => $returnUrl,
+            'order_id' => $order['order_id'] ?? ($order['id'] ?? null),
             'trade_no' => $order['trade_no'],
             'total_amount' => $order['total_amount'],
             'user_id' => $order['user_id'],

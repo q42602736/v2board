@@ -255,6 +255,19 @@ class OrderController extends Controller
             ->where('status', 0)
             ->first();
         if (!$order) {
+            // 支付失败重试会换新单号，页面若还拿着旧单号，这里回退查别名
+            $alias = \App\Models\OrderTradeAlias::where('trade_no', $tradeNo)->first();
+            if ($alias) {
+                $order = Order::where('id', $alias->order_id)
+                    ->where('user_id', $request->user['id'])
+                    ->where('status', 0)
+                    ->first();
+                if ($order) {
+                    $tradeNo = $order->trade_no;
+                }
+            }
+        }
+        if (!$order) {
             abort(500, __('Order does not exist or has been paid'));
         }
         // free process
@@ -276,6 +289,7 @@ class OrderController extends Controller
         $order->payment_id = $method;
         if (!$order->save()) abort(500, __('Request failed, please try again later'));
         $result = $paymentService->pay([
+            'order_id' => $order->id,
             'trade_no' => $tradeNo,
             'total_amount' => isset($order->handling_amount) ? ($order->total_amount + $order->handling_amount) : $order->total_amount,
             'user_id' => $order->user_id,

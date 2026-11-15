@@ -65,9 +65,51 @@ class MihaPay
         $params['sign'] = $this->makeSign($params, $key);
 
         $result = $this->post($this->getApiUrl(), $params);
+
         if ((int) ($result['code'] ?? 0) !== 1) {
             $message = trim((string) ($result['msg'] ?? ''));
-            abort(500, $message !== '' ? $message : '米哈支付下单失败');
+            if ($message === '') {
+                $message = '米哈支付下单失败';
+            }
+
+            // 网关对同一个 out_trade_no 只允许下单一次：首次即使取码失败
+            // （渠道异常、出码失败）也会占用该单号，用户再次支付就报
+            // 「商户订单号已存在」，订单从此永远付不了。
+            // 这里换一个新单号重试，并把旧单号记入别名表防止掉单。
+            $lastMessage = $message;
+            $retryable = $this->isRetryableFailure($message);
+            for ($attempt = 0; $retryable && $attempt < 2; $attempt++) {
+                $newTradeNo = $this->rotateTradeNo($order, (string) $order['trade_no']);
+                if ($newTradeNo === null) {
+                    break;
+                }
+                // return_url 里带着旧单号，换号后同步替换，支付完回来才能看到本单
+                if (!empty($order['return_url'])) {
+                    $order['return_url'] = str_replace(
+                        (string) $params['out_trade_no'],
+                        $newTradeNo,
+                        (string) $order['return_url']
+                    );
+                    $params['return_url'] = $order['return_url'];
+                }
+                $order['trade_no'] = $newTradeNo;
+                $params['out_trade_no'] = $newTradeNo;
+                $params['sign'] = $this->makeSign($params, $key);
+
+                usleep(200000);
+                $result = $this->post($this->getApiUrl(), $params);
+                if ((int) ($result['code'] ?? 0) === 1) {
+                    break;
+                }
+                $lastMessage = trim((string) ($result['msg'] ?? ''));
+                if ($lastMessage === '') {
+                    $lastMessage = '米哈支付下单失败';
+                }
+            }
+
+            if ((int) ($result['code'] ?? 0) !== 1) {
+                abort(500, $lastMessage);
+            }
         }
 
         // 米哈支付返回的 qrcode / cashurl / payurl 都是「收银台网页地址」，
@@ -107,6 +149,59 @@ class MihaPay
         }
 
         abort(500, '米哈支付未返回有效的支付地址');
+    }
+
+    /**
+     * 判断失败是否值得换单号重试。
+     * 只有网关侧（单号占用、渠道取码失败、系统繁忙）才换，
+     * 金额/配置类错误换号也没用，直接报给用户。
+     */
+    private function isRetryableFailure($message)
+    {
+        if ($message === '') {
+            return true;
+        }
+
+        return (bool) preg_match('/已存在|重复|出码|系统|繁忙|超时|错误|失败|异常|empty|error/i', $message);
+    }
+
+    /**
+     * 换一个新的订单号并保留旧单号别名。
+     * 返回新单号，失败返回 null。
+     */
+    private function rotateTradeNo(array $order, $oldTradeNo)
+    {
+        $orderId = (int) ($order['order_id'] ?? 0);
+        if ($orderId <= 0) {
+            return null;
+        }
+
+        for ($i = 0; $i < 3; $i++) {
+            $newTradeNo = \App\Utils\Helper::generateOrderNo();
+            try {
+                $updated = \App\Models\Order::where('id', $orderId)
+                    ->where('status', 0)
+                    ->update(['trade_no' => $newTradeNo]);
+            } catch (\Exception $e) {
+                // 单号撞车，换一个再试
+                continue;
+            }
+            if (!$updated) {
+                return null;
+            }
+            try {
+                \App\Models\OrderTradeAlias::firstOrCreate(
+                    ['trade_no' => $oldTradeNo],
+                    ['order_id' => $orderId, 'created_at' => time()]
+                );
+            } catch (\Exception $e) {
+                // 别名写入失败不影响当前支付
+            }
+
+            return $newTradeNo;
+        }
+
+        return null;
     }
 
     private function getApiUrl()

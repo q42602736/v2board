@@ -4,6 +4,7 @@ namespace App\Http\Controllers\V1\Guest;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Models\OrderTradeAlias;
 use App\Services\OrderService;
 use App\Services\PaymentService;
 use App\Services\TelegramService;
@@ -29,6 +30,14 @@ class PaymentController extends Controller
     private function handle($tradeNo, $callbackNo)
     {
         $order = Order::where('trade_no', $tradeNo)->first();
+        if (!$order) {
+            // 支付失败重试时订单会换成新单号，旧单号挂在别名表里，
+            // 用户若仍付了旧单号，这里把订单找回来，避免掉单。
+            $alias = OrderTradeAlias::where('trade_no', $tradeNo)->first();
+            if ($alias) {
+                $order = Order::find($alias->order_id);
+            }
+        }
         if (!$order) {
             abort(500, 'order is not found');
         }
